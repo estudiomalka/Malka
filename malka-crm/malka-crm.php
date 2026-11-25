@@ -3,7 +3,7 @@
  * Plugin Name:          Malka CRM
  * Plugin URI:           https://estudiomalka.cl
  * Description:          CRM de clientes para estudios creativos: cotizaciones y abonos, proyectos con Carta Gantt por etapas, tareas del cliente con plazos, reprogramación automática por atrasos, aprobaciones con rondas y facturas HTML seguras.
- * Version:              5.3.2
+ * Version:              5.4.0
  * Author:               Estudio Malka
  * Author URI:           https://estudiomalka.cl
  * License:              GPL-2.0-or-later
@@ -49,7 +49,7 @@ if ( defined( 'MALKA_CRM_VERSION' ) ) {
 	return;
 }
 
-define( 'MALKA_CRM_VERSION', '5.3.2' );
+define( 'MALKA_CRM_VERSION', '5.4.0' );
 define( 'MALKA_CRM_FILE', __FILE__ );
 define( 'MALKA_CRM_PATH', plugin_dir_path( __FILE__ ) );
 define( 'MALKA_CRM_URL', plugin_dir_url( __FILE__ ) );

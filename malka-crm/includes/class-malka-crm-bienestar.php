@@ -784,41 +784,129 @@ class Malka_CRM_Bienestar {
 		);
 
 		/*
-		 * Antes esta pantalla decía «fechas y recordatorios, nunca
-		 * resultados». Ahora guarda medidas del cuerpo porque ella lo pidió,
-		 * y entonces corresponde decir dónde quedan y quién las ve. No es
-		 * letra chica: es la diferencia entre anotar algo sabiendo dónde va
-		 * y descubrirlo después.
+		 * El orden de la pantalla es el orden en que se usa:
+		 *
+		 * 1. Anotar, que es lo de todos los días y va primero.
+		 * 2. Lo anotado: los gráficos y la tabla. Es a lo que se entra.
+		 * 3. Los ajustes —qué mides, tus metas— detrás de UNA sola
+		 *    puerta, porque se tocan una vez cada tanto.
+		 *
+		 * Antes los tres formularios de configuración estaban abiertos
+		 * arriba y los datos quedaban al final: se entraba a ver cómo
+		 * viene el peso y lo primero eran tres formularios.
 		 */
-		printf(
-			'<p class="esc-hint esc-med__p">%s</p>',
-			esc_html__( 'Esto se guarda en tu propio sitio y no sale a ninguna parte. Las metas las pones tú; el panel no opina sobre tus números.', 'malka-crm' )
-		);
-
 		echo self::form_medir( $tipos ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		echo self::diagrama(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 
 		if ( ! $medidas ) {
 			printf(
-				'<p class="esc-empty">%s</p>',
-				esc_html__( 'Todavía no hay nada anotado. Anota lo que quieras seguir y acá aparece cómo viene.', 'malka-crm' )
+				'<div class="esc-med__vacio"><p>%1$s</p><p class="esc-hint">%2$s</p></div>',
+				esc_html__( 'Todavía no hay nada anotado. Anota arriba y acá aparece cómo viene.', 'malka-crm' ),
+				esc_html__( 'Vienen peso y grasa. En Ajustes agregas las que quieras seguir.', 'malka-crm' )
 			);
-			echo '</section>';
-			return ob_get_clean();
-		}
+		} else {
+			$graficos = '';
 
-		foreach ( $tipos as $t ) {
-			$serie = self::serie( $t['clave'] );
+			foreach ( $tipos as $t ) {
+				$serie = self::serie( $t['clave'] );
 
-			if ( count( $serie ) < 2 ) {
-				continue;
+				if ( count( $serie ) < 2 ) {
+					continue;
+				}
+
+				$graficos .= self::linea( $t, $serie );
 			}
 
-			echo self::linea( $t, $serie ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			if ( $graficos ) {
+				echo '<div class="esc-med__gs">' . $graficos . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			} else {
+				printf(
+					'<p class="esc-hint esc-med__p">%s</p>',
+					esc_html__( 'Con una sola medición no hay línea todavía.', 'malka-crm' )
+				);
+			}
+
+			echo self::tabla_medidas( $tipos, array_slice( $medidas, 0, 40 ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
 
-		echo self::tabla_medidas( $tipos, array_slice( $medidas, 0, 40 ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo self::ajustes( $tipos ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		echo '</section>';
+
+		return ob_get_clean();
+	}
+
+	/**
+	 * Todo lo que se configura, detrás de una sola puerta.
+	 *
+	 * Qué mides, tus metas y el dibujo de dónde se mide cada cosa. Son
+	 * cosas que se tocan una vez cada tanto, así que no pueden estar
+	 * compitiendo con lo de todos los días, que es anotar y mirar.
+	 *
+	 * @param array[] $tipos Qué se mide.
+	 * @return string
+	 */
+	private static function ajustes( $tipos ) {
+		ob_start();
+		printf(
+			'<details class="esc-med__cfg"><summary>%s</summary><div class="esc-med__cfgc">',
+			esc_html__( 'Ajustes de medidas', 'malka-crm' )
+		);
+
+		/* ── Qué mides ── */
+		printf( '<h3 class="esc-lbl">%s</h3>', esc_html__( 'Qué mides', 'malka-crm' ) );
+		echo self::diagrama( $tipos ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+
+		/* ── Tus metas ── */
+		printf( '<h3 class="esc-lbl">%s</h3>', esc_html__( 'Tus metas', 'malka-crm' ) );
+		printf(
+			'<p class="esc-hint">%s</p>',
+			esc_html__( 'Salen como una raya en el gráfico. Para sacar una, deja el campo vacío.', 'malka-crm' )
+		);
+		printf( '<form class="esc-med__n" method="post" action="%s">', esc_url( admin_url( 'admin-post.php' ) ) );
+		wp_nonce_field( 'malka_crm_medida_meta', '_wpnonce' );
+		echo '<input type="hidden" name="action" value="malka_crm_medida_meta" />';
+
+		foreach ( $tipos as $t ) {
+			printf(
+				'<label><span>%1$s</span><input type="text" inputmode="decimal" name="m[%2$s]" value="%3$s" placeholder="%4$s" /></label>',
+				esc_html( $t['nombre'] . ( $t['unidad'] ? ' (' . $t['unidad'] . ')' : '' ) ),
+				esc_attr( $t['clave'] ),
+				esc_attr( isset( $t['meta'] ) ? $t['meta'] : '' ),
+				esc_attr__( 'sin meta', 'malka-crm' )
+			);
+		}
+
+		printf( '<button type="submit" class="esc-btn">%s</button>', esc_html__( 'Guardar metas', 'malka-crm' ) );
+		echo '</form>';
+
+		/* ── Algo que no está en el dibujo ── */
+		printf( '<h3 class="esc-lbl">%s</h3>', esc_html__( 'Medir otra cosa', 'malka-crm' ) );
+		printf( '<form class="esc-med__n" method="post" action="%s">', esc_url( admin_url( 'admin-post.php' ) ) );
+		wp_nonce_field( 'malka_crm_medida_tipo', '_wpnonce' );
+		echo '<input type="hidden" name="action" value="malka_crm_medida_tipo" />';
+		printf(
+			'<label><span>%1$s</span><input type="text" name="nombre" placeholder="%2$s" required /></label>',
+			esc_html__( 'Qué', 'malka-crm' ),
+			esc_attr__( 'Presión, horas de sueño…', 'malka-crm' )
+		);
+		printf(
+			'<label><span>%1$s</span><input type="text" name="unidad" placeholder="%2$s" /></label>',
+			esc_html__( 'En qué', 'malka-crm' ),
+			esc_attr__( 'cm, kg, %…', 'malka-crm' )
+		);
+		printf( '<button type="submit" class="esc-btn">%s</button>', esc_html__( 'Agregar', 'malka-crm' ) );
+		echo '</form>';
+
+		/*
+		 * Dónde quedan estos datos. Va acá abajo, una vez, en vez de
+		 * arriba de todo: lo importante es decirlo, no repetirlo cada
+		 * vez que entra a anotar su peso.
+		 */
+		printf(
+			'<p class="esc-hint esc-med__priv">%s</p>',
+			esc_html__( 'Se guarda en tu propio sitio y no sale a ninguna parte. Las metas las pones tú; el panel no opina sobre tus números.', 'malka-crm' )
+		);
+
+		echo '</div></details>';
 
 		return ob_get_clean();
 	}
@@ -864,7 +952,45 @@ class Malka_CRM_Bienestar {
 			return '';
 		}
 
+		/*
+		 * El mismo botón pone y saca. Si ya la mide, la saca de la lista
+		 * —pero NO borra lo anotado: dejar de seguir la cintura no es lo
+		 * mismo que tirar seis meses de mediciones. Si la vuelve a
+		 * agregar, aparecen de nuevo.
+		 */
+		foreach ( self::tipos() as $t ) {
+			if ( $t['clave'] === $punto ) {
+				self::quitar_tipo( $punto );
+				return '';
+			}
+		}
+
 		return self::tipo_nuevo( $puntos[ $punto ][0], $puntos[ $punto ][1] );
+	}
+
+	/**
+	 * Deja de seguir una medida, sin borrar lo anotado.
+	 *
+	 * @param string $clave Cuál.
+	 * @return bool Si estaba.
+	 */
+	public static function quitar_tipo( $clave ) {
+		$clave = sanitize_key( $clave );
+		$d     = self::datos();
+
+		foreach ( $d['tipos'] as $i => $t ) {
+			if ( $t['clave'] !== $clave ) {
+				continue;
+			}
+
+			unset( $d['tipos'][ $i ] );
+			$d['tipos'] = array_values( $d['tipos'] );
+			self::guardar_todo( $d );
+
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
@@ -879,52 +1005,42 @@ class Malka_CRM_Bienestar {
 	 *
 	 * @return string
 	 */
-	public static function diagrama() {
+	public static function diagrama( $tipos = null ) {
 		$puntos = self::puntos();
-		$tengo  = wp_list_pluck( self::tipos(), 'clave' );
+		$tengo  = wp_list_pluck( null === $tipos ? self::tipos() : $tipos, 'clave' );
 
 		ob_start();
-		printf( '<details class="esc-med__mas esc-fig__d"><summary>%s</summary>', esc_html__( 'Dónde se mide cada cosa', 'malka-crm' ) );
 		echo '<div class="esc-fig">';
 		echo <<<'SVG'
-			<svg aria-hidden="true" focusable="false" viewBox="0 0 250 520" xmlns="http://www.w3.org/2000/svg">
-			<ellipse class="esc-fig__b" cx="120" cy="34" rx="19" ry="25"/>
-			<path class="esc-fig__b" d="
-			M112 58 C112 67 107 71 99 74 C90 77 84 81 82 90
-			L66 150 L54 214 L49 250
-			C48 258 46 264 44 270 C43 275 46 278 51 277 C55 276 57 272 58 267
-			L64 234 L74 174 C75 164 76 156 76 146
-			L77 178 C78 192 78 200 77 210
-			C76 222 80 232 88 244 L96 300 L95 374 L95 452
-			C95 462 98 468 104 468 L112 468 C117 468 119 464 119 458
-			L120 300 L121 458 C121 464 123 468 128 468 L136 468
-			C142 468 145 462 145 452 L145 374 L144 300
-			L152 244 C160 232 164 222 163 210 C162 200 162 192 163 178
-			L164 146 C164 156 165 164 166 174 L176 234 L182 267
-			C183 272 185 276 189 277 C194 278 197 275 196 270
-			C194 264 192 258 191 250 L186 214 L174 150 L158 90
-			C156 81 150 77 141 74 C133 71 128 67 128 58" />
-			<line class="esc-fig__m" x1="104" y1="64" x2="202" y2="64"/>
-			<circle class="esc-fig__p" cx="212" cy="64" r="8"/><text class="esc-fig__n" x="212" y="67.5">1</text>
-			<line class="esc-fig__m" x1="74" y1="118" x2="202" y2="118"/>
-			<circle class="esc-fig__p" cx="212" cy="118" r="8"/><text class="esc-fig__n" x="212" y="121.5">2</text>
-			<line class="esc-fig__m" x1="77" y1="178" x2="202" y2="178"/>
-			<circle class="esc-fig__p" cx="212" cy="178" r="8"/><text class="esc-fig__n" x="212" y="181.5">3</text>
-			<line class="esc-fig__m" x1="78" y1="216" x2="202" y2="216"/>
-			<circle class="esc-fig__p" cx="212" cy="216" r="8"/><text class="esc-fig__n" x="212" y="219.5">4</text>
-			<line class="esc-fig__m" x1="97" y1="290" x2="44" y2="290"/>
-			<circle class="esc-fig__p" cx="34" cy="290" r="8"/><text class="esc-fig__n" x="34" y="293.5">5</text>
-			<line class="esc-fig__m" x1="95" y1="380" x2="44" y2="380"/>
-			<circle class="esc-fig__p" cx="34" cy="380" r="8"/><text class="esc-fig__n" x="34" y="383.5">6</text>
-			<line class="esc-fig__m" x1="170" y1="130" x2="218" y2="134"/>
-			<circle class="esc-fig__p" cx="228" cy="135" r="8"/><text class="esc-fig__n" x="228" y="138.5">7</text>
-			<line class="esc-fig__m" x1="180" y1="200" x2="218" y2="200"/>
-			<circle class="esc-fig__p" cx="228" cy="200" r="8"/><text class="esc-fig__n" x="228" y="203.5">8</text>
-			<line class="esc-fig__m" x1="188" y1="252" x2="218" y2="252"/>
-			<circle class="esc-fig__p" cx="228" cy="252" r="8"/><text class="esc-fig__n" x="228" y="255.5">9</text>
-			<path class="esc-fig__m" d="M14 9 V474 M8 9 H20 M8 474 H20"/>
-			<circle class="esc-fig__p" cx="14" cy="242" r="8"/><text class="esc-fig__n" x="14" y="245.5">10</text>
-			</svg>
+			<svg aria-hidden="true" focusable="false" viewBox="0 0 260 500" xmlns="http://www.w3.org/2000/svg">
+			<g class="esc-fig__b">
+			<path d="M 107.0 245.0 C 101.2 249.5, 106.8 254.5, 107.0 272.0 C 107.2 289.5, 108.2 330.0, 108.0 350.0 C 107.8 370.0, 105.8 375.0, 106.0 392.0 C 106.2 409.0, 108.8 441.2, 109.0 452.0 C 109.2 462.8, 107.5 454.3, 107.0 457.0 C 106.5 459.7, 103.2 466.2, 106.0 468.0 C 108.8 469.8, 121.3 469.8, 124.0 468.0 C 126.7 466.2, 122.5 459.7, 122.0 457.0 C 121.5 454.3, 120.4 462.8, 121.2 452.0 C 122.1 441.2, 125.4 409.0, 127.0 392.0 C 128.6 375.0, 129.1 370.0, 130.8 350.0 C 132.4 330.0, 134.9 289.5, 136.8 272.0 C 138.6 254.5, 147.0 249.5, 142.0 245.0 C 137.0 240.5, 112.8 240.5, 107.0 245.0 Z"/>
+			<path d="M 153.0 245.0 C 158.8 249.5, 153.2 254.5, 153.0 272.0 C 152.8 289.5, 151.8 330.0, 152.0 350.0 C 152.2 370.0, 154.2 375.0, 154.0 392.0 C 153.8 409.0, 151.2 441.2, 151.0 452.0 C 150.8 462.8, 152.5 454.3, 153.0 457.0 C 153.5 459.7, 156.8 466.2, 154.0 468.0 C 151.2 469.8, 138.7 469.8, 136.0 468.0 C 133.3 466.2, 137.5 459.7, 138.0 457.0 C 138.5 454.3, 139.6 462.8, 138.8 452.0 C 137.9 441.2, 134.6 409.0, 133.0 392.0 C 131.4 375.0, 130.9 370.0, 129.2 350.0 C 127.6 330.0, 125.1 289.5, 123.2 272.0 C 121.4 254.5, 113.0 249.5, 118.0 245.0 C 123.0 240.5, 147.2 240.5, 153.0 245.0 Z"/>
+			<path d="M 75.0 106.0 C 68.8 112.7, 66.7 132.3, 64.0 146.0 C 61.3 159.7, 60.5 176.0, 59.0 188.0 C 57.5 200.0, 55.8 207.5, 55.0 218.0 C 54.2 228.5, 54.7 240.5, 54.0 251.0 C 53.3 261.5, 50.8 272.0, 51.0 281.0 C 51.2 290.0, 52.7 301.0, 55.0 305.0 C 57.3 309.0, 63.3 309.0, 65.0 305.0 C 66.7 301.0, 64.8 290.0, 65.0 281.0 C 65.2 272.0, 65.0 261.5, 66.0 251.0 C 67.0 240.5, 69.2 228.5, 71.0 218.0 C 72.8 207.5, 74.5 200.0, 77.0 188.0 C 79.5 176.0, 82.0 159.7, 86.0 146.0 C 90.0 132.3, 102.8 112.7, 101.0 106.0 C 99.2 99.3, 81.2 99.3, 75.0 106.0 Z"/>
+			<path d="M 185.0 106.0 C 191.2 112.7, 193.3 132.3, 196.0 146.0 C 198.7 159.7, 199.5 176.0, 201.0 188.0 C 202.5 200.0, 204.2 207.5, 205.0 218.0 C 205.8 228.5, 205.3 240.5, 206.0 251.0 C 206.7 261.5, 209.2 272.0, 209.0 281.0 C 208.8 290.0, 207.3 301.0, 205.0 305.0 C 202.7 309.0, 196.7 309.0, 195.0 305.0 C 193.3 301.0, 195.2 290.0, 195.0 281.0 C 194.8 272.0, 195.0 261.5, 194.0 251.0 C 193.0 240.5, 190.8 228.5, 189.0 218.0 C 187.2 207.5, 185.5 200.0, 183.0 188.0 C 180.5 176.0, 178.0 159.7, 174.0 146.0 C 170.0 132.3, 157.2 112.7, 159.0 106.0 C 160.8 99.3, 178.8 99.3, 185.0 106.0 Z"/>
+			<path d="M 119.0 80.0 C 114.8 82.0, 121.8 87.0, 116.0 92.0 C 110.2 97.0, 88.3 102.0, 84.0 110.0 C 79.7 118.0, 88.2 131.0, 90.0 140.0 C 91.8 149.0, 93.2 156.0, 95.0 164.0 C 96.8 172.0, 101.0 181.0, 101.0 188.0 C 101.0 195.0, 97.3 200.0, 95.0 206.0 C 92.7 212.0, 87.8 217.5, 87.0 224.0 C 86.2 230.5, 76.2 241.5, 90.0 245.0 C 103.8 248.5, 156.2 248.5, 170.0 245.0 C 183.8 241.5, 173.8 230.5, 173.0 224.0 C 172.2 217.5, 167.3 212.0, 165.0 206.0 C 162.7 200.0, 159.0 195.0, 159.0 188.0 C 159.0 181.0, 163.2 172.0, 165.0 164.0 C 166.8 156.0, 168.2 149.0, 170.0 140.0 C 171.8 131.0, 180.3 118.0, 176.0 110.0 C 171.7 102.0, 149.8 97.0, 144.0 92.0 C 138.2 87.0, 145.2 82.0, 141.0 80.0 C 136.8 78.0, 123.2 78.0, 119.0 80.0 Z"/>
+			<ellipse cx="130" cy="48" rx="24" ry="31"/>
+			</g>
+			<line class="esc-fig__m" x1="150" y1="88" x2="232" y2="88"/>
+			<circle class="esc-fig__p" cx="242" cy="88" r="9"/><text class="esc-fig__n" x="242" y="91.5">1</text>
+			<line class="esc-fig__m" x1="150" y1="140" x2="232" y2="140"/>
+			<circle class="esc-fig__p" cx="242" cy="140" r="9"/><text class="esc-fig__n" x="242" y="143.5">2</text>
+			<line class="esc-fig__m" x1="150" y1="188" x2="232" y2="188"/>
+			<circle class="esc-fig__p" cx="242" cy="188" r="9"/><text class="esc-fig__n" x="242" y="191.5">3</text>
+			<line class="esc-fig__m" x1="150" y1="224" x2="232" y2="224"/>
+			<circle class="esc-fig__p" cx="242" cy="224" r="9"/><text class="esc-fig__n" x="242" y="227.5">4</text>
+			<line class="esc-fig__m" x1="112" y1="290" x2="52" y2="290"/>
+			<circle class="esc-fig__p" cx="42" cy="290" r="9"/><text class="esc-fig__n" x="42" y="293.5">5</text>
+			<line class="esc-fig__m" x1="112" y1="400" x2="52" y2="400"/>
+			<circle class="esc-fig__p" cx="42" cy="400" r="9"/><text class="esc-fig__n" x="42" y="403.5">6</text>
+			<line class="esc-fig__m" x1="200" y1="150" x2="232" y2="150"/>
+			<circle class="esc-fig__p" cx="242" cy="150" r="9"/><text class="esc-fig__n" x="242" y="153.5">7</text>
+			<line class="esc-fig__m" x1="200" y1="205" x2="232" y2="205"/>
+			<circle class="esc-fig__p" cx="242" cy="205" r="9"/><text class="esc-fig__n" x="242" y="208.5">8</text>
+			<line class="esc-fig__m" x1="200" y1="255" x2="232" y2="255"/>
+			<circle class="esc-fig__p" cx="242" cy="255" r="9"/><text class="esc-fig__n" x="242" y="258.5">9</text>
+			<path class="esc-fig__m" d="M18 14 V482 M12 14 H24 M12 482 H24"/>
+			<circle class="esc-fig__p" cx="18" cy="250" r="9"/><text class="esc-fig__n" x="18" y="253.5">10</text></svg>
 SVG;
 
 		printf( '<form method="post" action="%s" class="esc-fig__l">', esc_url( admin_url( 'admin-post.php' ) ) );
@@ -939,21 +1055,24 @@ SVG;
 			$ya = in_array( $clave, $tengo, true );
 
 			printf(
-				'<li%1$s><i>%2$d</i><span>%3$s</span>%4$s</li>',
+				'<li%1$s><i>%2$d</i><span>%3$s</span>' .
+				'<button type="submit" class="esc-mini" name="punto" value="%4$s" aria-label="%6$s">%5$s</button></li>',
 				$ya ? ' class="is-ya"' : '',
 				$n,
 				esc_html( $d[0] ),
-				$ya
-					? sprintf( '<em>%s</em>', esc_html__( 'ya la mides', 'malka-crm' ) )
-					: sprintf(
-						'<button type="submit" class="esc-mini" name="punto" value="%1$s">%2$s</button>',
-						esc_attr( $clave ),
-						esc_html__( 'Agregar', 'malka-crm' )
-					)
+				esc_attr( $clave ),
+				$ya ? esc_html__( 'Quitar', 'malka-crm' ) : esc_html__( 'Agregar', 'malka-crm' ),
+				esc_attr(
+					$ya
+						/* translators: la medida */
+						? sprintf( __( 'Dejar de medir %s', 'malka-crm' ), $d[0] )
+						/* translators: la medida */
+						: sprintf( __( 'Empezar a medir %s', 'malka-crm' ), $d[0] )
+				)
 			);
 		}
 
-		echo '</ol></form></div></details>';
+		echo '</ol></form></div>';
 
 		return ob_get_clean();
 	}
@@ -966,7 +1085,7 @@ SVG;
 	 */
 	private static function form_medir( $tipos ) {
 		ob_start();
-		printf( '<form class="esc-med__n" method="post" action="%s">', esc_url( admin_url( 'admin-post.php' ) ) );
+		printf( '<form class="esc-med__n esc-med__anotar" method="post" action="%s">', esc_url( admin_url( 'admin-post.php' ) ) );
 		wp_nonce_field( 'malka_crm_medida_anotar', '_wpnonce' );
 		echo '<input type="hidden" name="action" value="malka_crm_medida_anotar" />';
 
@@ -987,47 +1106,6 @@ SVG;
 
 		printf( '<button type="submit" class="esc-btn esc-btn--primary">%s</button>', esc_html__( 'Anotar', 'malka-crm' ) );
 		echo '</form>';
-
-		// Lo que no esté en la lista se agrega acá, y queda para siempre.
-		printf( '<details class="esc-med__mas"><summary>%s</summary>', esc_html__( 'Medir otra cosa', 'malka-crm' ) );
-		printf( '<form class="esc-med__n" method="post" action="%s">', esc_url( admin_url( 'admin-post.php' ) ) );
-		wp_nonce_field( 'malka_crm_medida_tipo', '_wpnonce' );
-		echo '<input type="hidden" name="action" value="malka_crm_medida_tipo" />';
-		printf(
-			'<label><span>%1$s</span><input type="text" name="nombre" placeholder="%2$s" required /></label>',
-			esc_html__( 'Qué', 'malka-crm' ),
-			esc_attr__( 'Cintura, presión, horas de sueño…', 'malka-crm' )
-		);
-		printf(
-			'<label><span>%1$s</span><input type="text" name="unidad" placeholder="%2$s" /></label>',
-			esc_html__( 'En qué', 'malka-crm' ),
-			esc_attr__( 'cm, kg, %…', 'malka-crm' )
-		);
-		printf( '<button type="submit" class="esc-btn">%s</button>', esc_html__( 'Agregar', 'malka-crm' ) );
-		echo '</form></details>';
-
-		// Las metas: las pone ella, y se sacan dejando el campo vacío.
-		printf( '<details class="esc-med__mas"><summary>%s</summary>', esc_html__( 'Mis metas', 'malka-crm' ) );
-		printf(
-			'<p class="esc-hint">%s</p>',
-			esc_html__( 'Opcional. Aparece como una raya en el gráfico y te digo cuánto falta. Para sacarla, deja el campo vacío.', 'malka-crm' )
-		);
-		printf( '<form class="esc-med__n" method="post" action="%s">', esc_url( admin_url( 'admin-post.php' ) ) );
-		wp_nonce_field( 'malka_crm_medida_meta', '_wpnonce' );
-		echo '<input type="hidden" name="action" value="malka_crm_medida_meta" />';
-
-		foreach ( $tipos as $t ) {
-			printf(
-				'<label><span>%1$s</span><input type="text" inputmode="decimal" name="m[%2$s]" value="%3$s" placeholder="%4$s" /></label>',
-				esc_html( $t['nombre'] . ( $t['unidad'] ? ' (' . $t['unidad'] . ')' : '' ) ),
-				esc_attr( $t['clave'] ),
-				esc_attr( isset( $t['meta'] ) ? $t['meta'] : '' ),
-				esc_attr__( 'sin meta', 'malka-crm' )
-			);
-		}
-
-		printf( '<button type="submit" class="esc-btn">%s</button>', esc_html__( 'Guardar', 'malka-crm' ) );
-		echo '</form></details>';
 
 		return ob_get_clean();
 	}

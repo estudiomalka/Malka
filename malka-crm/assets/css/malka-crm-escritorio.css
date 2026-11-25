@@ -11958,7 +11958,10 @@ svg[viewBox="0 0 20 20"] * { stroke-width: 1.2; }
 .malka-esc .esc-fig svg { display: block; width: 100%; height: auto; color: var(--esc-ink); }
 /* La figura en el tono del texto; las guías y los números, en el gris de
    lo secundario: el dibujo es la referencia, no el dato. */
-.malka-esc .esc-fig__b { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round; }
+/* Relleno del panel, no «none»: las extremidades se dibujan antes que
+   el torso, así que rellenas tapan las líneas que les pasan por debajo
+   y la silueta queda limpia en vez de con el brazo cruzando el pecho. */
+.malka-esc .esc-fig__b { fill: var(--esc-panel); stroke: currentColor; stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round; }
 .malka-esc .esc-fig__m { fill: none; stroke: var(--esc-ink-4); stroke-width: 1; stroke-dasharray: 3 3; }
 .malka-esc .esc-fig__p { fill: var(--esc-ink-2); }
 .malka-esc .esc-fig__n { fill: var(--esc-panel); font: 600 9px var(--esc-ui); text-anchor: middle; }
@@ -11998,3 +12001,39 @@ svg[viewBox="0 0 20 20"] * { stroke-width: 1.2; }
 	.malka-esc .esc-fig svg { max-width: 220px; }
 	.malka-esc .esc-fig__l { width: 100%; }
 }
+
+/* ─── Cuerpo, ordenado por cómo se usa ───
+   Anotar arriba, los datos al medio, los ajustes detrás de una puerta. */
+.malka-esc .esc-med__anotar {
+	padding-bottom: 1.1rem;
+	border-bottom: 1px solid var(--esc-hair);
+	margin-bottom: 1.1rem;
+}
+.malka-esc .esc-med__vacio { padding: .4rem var(--esc-pad) 1.4rem; }
+.malka-esc .esc-med__vacio p { margin: 0 0 .3rem; }
+.malka-esc .esc-med__gs { display: grid; grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr)); gap: 0 1.6rem; }
+.malka-esc .esc-med__gs .esc-med__g:first-child { border-top: 0; padding-top: 0; }
+
+/* La única puerta de configuración. */
+.malka-esc .esc-med__cfg {
+	margin: 1.4rem var(--esc-pad) 0;
+	border-top: 1px solid var(--esc-hair);
+}
+.malka-esc .esc-med__cfg > summary {
+	cursor: pointer;
+	list-style: none;
+	padding: .9rem 0;
+	font-size: .88rem;
+	font-weight: 500;
+	color: var(--esc-ink-2);
+}
+.malka-esc .esc-med__cfg > summary::-webkit-details-marker { display: none; }
+.malka-esc .esc-med__cfg > summary::before { content: "+ "; color: var(--esc-ink-3); }
+.malka-esc .esc-med__cfg[open] > summary::before { content: "− "; }
+.malka-esc .esc-med__cfg > summary:hover { color: var(--esc-ink); }
+.malka-esc .esc-med__cfgc { padding-bottom: 1.2rem; }
+.malka-esc .esc-med__cfgc > h3 { margin: 1.4rem 0 .5rem; }
+.malka-esc .esc-med__cfgc > h3:first-child { margin-top: 0; }
+.malka-esc .esc-med__cfgc .esc-med__n,
+.malka-esc .esc-med__cfgc .esc-hint { margin-left: 0; margin-right: 0; }
+.malka-esc .esc-med__priv { margin-top: 1.4rem; padding-top: .9rem; border-top: 1px solid var(--esc-hair); }
