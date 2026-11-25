@@ -1,0 +1,622 @@
+/* ============================================================
+   Malka CRM — Identidad visual en WP-Admin
+   Beige/camel #B8A792 · base #F9F8F6 · titulares #5C5C5C
+   ============================================================ */
+
+:root {
+	--malka-accent: #B8A792;
+	--malka-accent-dark: #9C8B76;
+	--malka-base: #F9F8F6;
+	--malka-line: #E7E3DD;
+	--malka-heading: #5C5C5C;
+	--malka-body: #7A7A7A;
+}
+
+/* ── Cabeceras ─────────────────────────────────────────── */
+.malka-crm-wrap h1 {
+	font-family: Georgia, "Times New Roman", serif;
+	font-weight: 400;
+	font-size: 26px;
+	letter-spacing: -.01em;
+	color: #1a1a1a;
+	padding-bottom: 10px;
+	margin-bottom: 4px;
+	position: relative;
+}
+
+.malka-crm-wrap h1::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	width: 38px;
+	height: 2px;
+	background: var(--malka-accent);
+}
+
+.malka-crm-wrap h2 {
+	font-family: Georgia, "Times New Roman", serif;
+	font-weight: 400;
+	font-size: 18px;
+	color: var(--malka-heading);
+	margin-top: 2em;
+}
+
+.malka-crm-wrap .description {
+	color: var(--malka-body);
+}
+
+/* ── Tarjetas del resumen ──────────────────────────────── */
+.malka-crm-wrap .malka-crm-cards {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 14px;
+	margin: 22px 0;
+}
+
+.malka-crm-card {
+	flex: 1 1 170px;
+	background: #fff;
+	border: 1px solid var(--malka-line);
+	border-left: 3px solid var(--malka-accent);
+	border-radius: 8px;
+	padding: 16px 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.malka-crm-card span:last-child {
+	font-size: 12px;
+	letter-spacing: .04em;
+	text-transform: uppercase;
+	color: var(--malka-body);
+}
+
+.malka-crm-card__num {
+	font-family: Georgia, serif;
+	font-size: 30px;
+	line-height: 1.1;
+	color: #1a1a1a;
+}
+
+.malka-crm-card--active { border-left-color: #8FA3B8; }
+.malka-crm-card--done   { border-left-color: #7FA88A; }
+.malka-crm-card--warn   { border-left-color: #D8A657; }
+.malka-crm-card--alert  { border-left-color: #C0603E; }
+
+/* ── Acciones rápidas ──────────────────────────────────── */
+.malka-crm-quick {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+	margin: 18px 0 28px;
+}
+
+.malka-crm-wrap .button-primary {
+	background: var(--malka-accent);
+	border-color: var(--malka-accent-dark);
+	color: #fff;
+	text-shadow: none;
+	box-shadow: none;
+}
+
+.malka-crm-wrap .button-primary:hover,
+.malka-crm-wrap .button-primary:focus {
+	background: var(--malka-accent-dark);
+	border-color: var(--malka-accent-dark);
+	color: #fff;
+}
+
+.malka-crm-wrap .button:not(.button-primary) {
+	border-color: var(--malka-line);
+	color: var(--malka-heading);
+	background: #fff;
+}
+
+/* ── Tablas ────────────────────────────────────────────── */
+.malka-crm-wrap .widefat {
+	border-color: var(--malka-line);
+	border-radius: 8px;
+	overflow: hidden;
+}
+
+.malka-crm-wrap .widefat thead th {
+	background: var(--malka-base);
+	color: var(--malka-heading);
+	font-size: 11px;
+	letter-spacing: .05em;
+	text-transform: uppercase;
+	border-bottom: 1px solid var(--malka-line);
+}
+
+.malka-crm-dashboard-table td {
+	vertical-align: middle;
+}
+
+.malka-crm-mini-bar {
+	display: block;
+	height: 7px;
+	background: var(--malka-line);
+	border-radius: 999px;
+	overflow: hidden;
+	margin-bottom: 4px;
+}
+
+.malka-crm-mini-bar span {
+	display: block;
+	height: 100%;
+	background: var(--malka-accent);
+}
+
+/* ── Editor de tareas en fichas ────────────────────────── */
+.malka-crm-tasks-wrap {
+	background: var(--malka-base);
+	border: 1px solid var(--malka-line);
+	border-radius: 8px;
+	padding: 16px;
+}
+
+.malka-crm-tasks-help {
+	margin-top: 0;
+}
+
+.malka-crm-tasks-actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.malka-crm-rows {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin: 12px 0;
+}
+
+.malka-crm-task-row {
+	background: #fff;
+	border: 1px solid var(--malka-line);
+	border-left: 3px solid #D9D3CA;
+	border-radius: 8px;
+	padding: 10px 12px;
+}
+
+.malka-crm-row-main {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.malka-crm-row-main .malka-crm-handle {
+	flex: 0 0 auto;
+	font-size: 15px;
+}
+
+.malka-crm-f-number {
+	flex: 0 0 74px;
+	text-align: center;
+}
+
+.malka-crm-f-type {
+	flex: 0 0 130px;
+}
+
+.malka-crm-f-name {
+	flex: 1 1 auto;
+	min-width: 180px;
+	font-size: 14px;
+}
+
+.malka-crm-row-main .malka-crm-remove-task {
+	flex: 0 0 auto;
+	margin-left: auto;
+}
+
+.malka-crm-row-meta {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+	gap: 8px 12px;
+	margin-top: 10px;
+	padding-top: 10px;
+	border-top: 1px dashed var(--malka-line);
+}
+
+.malka-crm-row-meta label {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	font-size: 11px;
+}
+
+.malka-crm-row-meta label > span {
+	font-size: 10px;
+	letter-spacing: .05em;
+	text-transform: uppercase;
+	color: #9A9A9A;
+}
+
+.malka-crm-row-meta input,
+.malka-crm-row-meta select {
+	width: 100%;
+	max-width: 100%;
+	font-size: 13px;
+}
+
+.malka-crm-row-meta label.is-narrow {
+	max-width: 132px;
+}
+
+.malka-crm-row-meta label.is-check {
+	flex-direction: row;
+	align-items: center;
+	gap: 6px;
+	align-self: end;
+	padding-bottom: 5px;
+}
+
+.malka-crm-row-meta label.is-check > span {
+	text-transform: none;
+	letter-spacing: 0;
+	font-size: 11px;
+	color: var(--malka-heading);
+}
+
+.malka-crm-row-meta label.is-check input {
+	width: auto;
+	margin: 0;
+}
+
+/* Tipos de fila */
+.malka-crm-task-row.is-stage {
+	background: #F3EFEA;
+	border-left-color: var(--malka-accent);
+}
+
+.malka-crm-task-row.is-stage .malka-crm-f-name {
+	font-weight: 600;
+	font-size: 15px;
+	color: var(--malka-heading);
+}
+
+.malka-crm-task-row.is-milestone { border-left-color: #8FA3B8; }
+.malka-crm-task-row.is-correction { border-left-color: #C0603E; }
+
+.malka-crm-task-row.is-done {
+	border-left-color: #7FA88A;
+}
+
+.malka-crm-task-row.is-done .malka-crm-f-name {
+	color: #7FA88A;
+}
+
+.malka-crm-task-row.is-sub {
+	margin-left: 26px;
+}
+
+.malka-crm-task-row.is-parent .malka-crm-f-name {
+	font-weight: 600;
+}
+
+.malka-crm-task-row.is-parent input:disabled {
+	background: #F1EEE9;
+	color: #A9A198;
+}
+
+.malka-crm-task-row.is-stage.is-collapsed {
+	opacity: .92;
+}
+
+.malka-crm-drop {
+	height: 60px;
+	background: #F3EFEA;
+	border: 1px dashed var(--malka-accent);
+	border-radius: 8px;
+}
+
+.malka-crm-remove-task {
+	color: #B0522F;
+	font-size: 18px;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.malka-crm-shiftlog {
+	margin: 0 0 12px;
+	padding-left: 18px;
+	font-size: 12px;
+	color: var(--malka-body);
+}
+
+/* ── Selector de proyecto ──────────────────────────────── */
+.malka-crm-project-picker {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin: 16px 0 20px;
+	padding: 12px 16px;
+	background: #fff;
+	border: 1px solid var(--malka-line);
+	border-left: 3px solid var(--malka-accent);
+	border-radius: 8px;
+}
+
+/* ── Insignias ─────────────────────────────────────────── */
+.malka-crm-badge {
+	display: inline-block;
+	padding: 2px 9px;
+	border-radius: 999px;
+	font-size: 10px;
+	letter-spacing: .05em;
+	text-transform: uppercase;
+	background: #EFEDE9;
+	color: var(--malka-body);
+}
+
+.malka-crm-badge--approved { background: #E4EDE4; color: #3F6B45; }
+.malka-crm-badge--changes  { background: #F6E9E2; color: #97552E; }
+
+.malka-crm-note {
+	margin: 6px 0;
+	padding: 7px 11px;
+	background: #fff;
+	border-left: 3px solid var(--malka-accent);
+	font-size: 12px;
+	font-style: italic;
+	color: var(--malka-body);
+}
+
+.malka-crm-reset {
+	display: inline-block;
+	margin-top: 4px;
+	font-size: 12px;
+	color: var(--malka-accent-dark);
+}
+
+.malka-crm-approvals-table td {
+	padding: 10px 8px;
+}
+
+.malka-crm-doclist {
+	list-style: none;
+	margin: 0 0 10px;
+	padding: 0;
+	font-size: 12px;
+}
+
+.malka-crm-doclist li {
+	padding: 4px 0;
+	border-bottom: 1px solid var(--malka-line);
+}
+
+/* ── Buscador de selects ───────────────────────────────── */
+.malka-crm-filter {
+	margin-bottom: 6px;
+}
+
+/* ── Metaboxes del CPT ─────────────────────────────────── */
+#malka_crm_project_data .postbox-header,
+#malka_crm_project_tasks .postbox-header,
+#malka_crm_project_approvals .postbox-header,
+#malka_crm_project_docs .postbox-header,
+#malka_crm_quote_data .postbox-header,
+#malka_crm_quote_payments .postbox-header {
+	border-bottom: 2px solid var(--malka-accent);
+}
+
+#malka_crm_project_data .hndle,
+#malka_crm_project_tasks .hndle,
+#malka_crm_project_approvals .hndle,
+#malka_crm_project_docs .hndle,
+#malka_crm_quote_data .hndle,
+#malka_crm_quote_payments .hndle {
+	font-family: Georgia, serif;
+	font-weight: 400;
+	color: var(--malka-heading);
+}
+
+/* ── Arrastre de filas ─────────────────────────────────── */
+.malka-crm-handle {
+	cursor: grab;
+	text-align: center;
+	color: var(--malka-accent);
+	font-size: 15px;
+	user-select: none;
+}
+
+.malka-crm-handle:active {
+	cursor: grabbing;
+}
+
+tr.malka-crm-drop td {
+	height: 38px;
+	background: #F3EFEA;
+}
+
+.ui-sortable-helper {
+	display: table;
+	background: #fff;
+	box-shadow: 0 6px 18px rgba(0, 0, 0, .12);
+}
+
+/* ── Aplicar plantilla ─────────────────────────────────── */
+.malka-crm-template-apply {
+	background: #fff;
+	border: 1px solid var(--malka-line);
+	border-left: 3px solid var(--malka-accent);
+	border-radius: 8px;
+	padding: 12px 16px;
+	margin-bottom: 14px;
+}
+
+.malka-crm-template-apply form {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+/* ── Estadísticas del proyecto ─────────────────────────── */
+.malka-crm-stats {
+	width: 100%;
+	margin: 8px 0 12px;
+	font-size: 12px;
+	border-collapse: collapse;
+}
+
+.malka-crm-stats td {
+	padding: 4px 0;
+	border-bottom: 1px solid var(--malka-line);
+	color: var(--malka-body);
+}
+
+.malka-crm-stats td:last-child {
+	text-align: right;
+	color: var(--malka-heading);
+}
+
+.malka-crm-stats tr.is-late td:last-child strong {
+	color: #C0603E;
+}
+
+/* ── Barra de avance en vivo ───────────────────────────── */
+.malka-crm-tasks-bar {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex-wrap: wrap;
+	padding: 10px 14px;
+	margin-bottom: 12px;
+	background: #fff;
+	border: 1px solid var(--malka-line);
+	border-left: 3px solid var(--malka-accent);
+	border-radius: 8px;
+	font-size: 13px;
+	color: var(--malka-body);
+}
+
+.malka-crm-live-progress strong {
+	font-family: Georgia, serif;
+	font-size: 18px;
+	color: #1a1a1a;
+	margin-left: 4px;
+}
+
+.malka-crm-live-count {
+	color: #9A9A9A;
+}
+
+/* ── Filas por tipo ────────────────────────────────────── */
+.malka-crm-task-row.is-milestone {
+	background: #F6F3EF;
+}
+
+.malka-crm-task-row.is-correction {
+	background: #F7EFE9;
+}
+
+.malka-crm-task-row.is-done input[name*="[name]"] {
+	color: #7FA88A;
+	text-decoration: line-through;
+}
+
+.malka-crm-task-row.is-stage.is-collapsed .malka-crm-handle::after {
+	content: " ▸";
+}
+
+.malka-crm-check {
+	text-align: center;
+}
+
+.malka-crm-check input {
+	margin: 0;
+}
+
+/* ── Jerarquía de tres niveles ─────────────────────────── */
+.malka-crm-task-row[data-level="2"] .malka-crm-name {
+	padding-left: 14px;
+}
+
+.malka-crm-task-row[data-level="3"] .malka-crm-name,
+.malka-crm-task-row.is-sub .malka-crm-name {
+	padding-left: 28px;
+	font-size: 12px;
+}
+
+.malka-crm-task-row[data-level="3"] .malka-crm-name-cell::before,
+.malka-crm-task-row.is-sub .malka-crm-name-cell::before {
+	content: "└";
+	position: absolute;
+	margin-left: 14px;
+	margin-top: 6px;
+	color: #C9C2B8;
+	font-size: 11px;
+}
+
+.malka-crm-name-cell {
+	position: relative;
+}
+
+.malka-crm-task-row.is-parent {
+	background: #FBF9F7;
+}
+
+.malka-crm-task-row.is-parent .malka-crm-name {
+	font-weight: 600;
+	color: var(--malka-heading);
+}
+
+.malka-crm-task-row.is-parent input:disabled {
+	background: #F1EEE9;
+	color: #A9A198;
+	cursor: not-allowed;
+}
+
+/* El editor de tareas aprovecha todo el ancho disponible */
+#malka_crm_project_tasks .inside {
+	margin: 0;
+	padding: 12px;
+}
+
+@media (min-width: 1200px) {
+	.malka-crm-row-meta {
+		grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+	}
+}
+
+@media (max-width: 782px) {
+	.malka-crm-row-main {
+		flex-wrap: wrap;
+	}
+
+	.malka-crm-f-name {
+		flex: 1 1 100%;
+		order: 5;
+	}
+}
+
+/* El editor de plantillas usa el mismo formato de fichas */
+#malka_crm_template_items .inside {
+	margin: 0;
+	padding: 12px;
+}
+
+.malka-crm-template-row .malka-crm-row-meta {
+	grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.malka-crm-template-row.is-stage {
+	background: #F3EFEA;
+	border-left-color: var(--malka-accent);
+}
+
+.malka-crm-template-row.is-stage .malka-crm-f-name {
+	font-weight: 600;
+	font-size: 15px;
+	color: var(--malka-heading);
+}
+
+.malka-crm-template-row.is-milestone  { border-left-color: #8FA3B8; }
+.malka-crm-template-row.is-correction { border-left-color: #C0603E; }
