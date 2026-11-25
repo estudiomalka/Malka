@@ -12037,3 +12037,28 @@ svg[viewBox="0 0 20 20"] * { stroke-width: 1.2; }
 .malka-esc .esc-med__cfgc .esc-med__n,
 .malka-esc .esc-med__cfgc .esc-hint { margin-left: 0; margin-right: 0; }
 .malka-esc .esc-med__priv { margin-top: 1.4rem; padding-top: .9rem; border-top: 1px solid var(--esc-hair); }
+
+/* Elegir qué silueta se dibuja. Es sólo el dibujo de referencia, así
+   que va chico y encima de él, no como un ajuste más del formulario. */
+.malka-esc .esc-fig__c { min-width: 0; }
+.malka-esc .esc-fig__sel {
+	display: inline-flex;
+	gap: 2px;
+	padding: 2px;
+	margin-bottom: .6rem;
+	background: var(--esc-fill);
+	border-radius: var(--esc-pill);
+}
+.malka-esc .esc-fig__sel button {
+	appearance: none;
+	border: 0;
+	background: transparent;
+	color: var(--esc-ink-3);
+	font: inherit;
+	font-size: .78rem;
+	padding: .26rem .7rem;
+	border-radius: var(--esc-pill);
+	cursor: pointer;
+}
+.malka-esc .esc-fig__sel button.is-on { background: var(--esc-panel); color: var(--esc-ink); font-weight: 500; }
+.malka-esc .esc-fig__sel button:hover:not(.is-on) { color: var(--esc-ink); }
