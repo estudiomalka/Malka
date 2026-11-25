@@ -1,5 +1,5 @@
 {
-  "version": "5.5.0",
-  "fecha": "2026-11-26T02:45:00Z",
-  "notas": "La silueta del cuerpo rehecha como una sola linea continua, con los brazos siguiendo el costado, y un selector mujer/hombre. Cambiar la silueta no toca lo que mides ni lo anotado."
+  "version": "5.6.0",
+  "fecha": "2026-11-26T04:20:00Z",
+  "notas": "Cuerpo: al pasar el mouse por cada medida te dice como tomarla bien. Se pueden anotar los 7 pliegues y los datos de la balanza (IMC, metabolismo, grasa visceral, musculo, hueso, proteina, agua). Todo lo que anotes el mismo dia queda en un solo registro, y los registros pasados se pueden editar o borrar."
 }
