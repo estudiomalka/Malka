@@ -33,6 +33,12 @@ class Malka_CRM_Updater {
 	/** Dónde se guarda la última respuesta. */
 	const CACHE = 'malka_crm_ultima_version';
 
+	/** La ficha con la versión publicada, dentro del repositorio. */
+	const FICHA = 'publicar/version.json';
+
+	/** Y el ZIP, al lado. */
+	const PAQUETE = 'publicar/malka-crm.zip';
+
 	public static function init() {
 		add_filter( 'pre_set_site_transient_update_plugins', array( __CLASS__, 'avisar' ) );
 		add_filter( 'plugins_api', array( __CLASS__, 'ficha' ), 10, 3 );
@@ -64,8 +70,17 @@ class Malka_CRM_Updater {
 			return $args;
 		}
 
-		// Sólo las descargas de releases de este repositorio, y nada más.
-		$mio = 'https://api.github.com/repos/' . $repo . '/releases/assets/';
+		/*
+		 * Dos formas de bajar el ZIP, según de dónde venga:
+		 *
+		 * - El adjunto de una release, que pide «octet-stream».
+		 * - Un archivo guardado en el repositorio, que pide «raw».
+		 *
+		 * Sin la cabecera que corresponde GitHub contesta con la ficha en
+		 * JSON en vez del archivo, y WordPress intenta descomprimir eso.
+		 */
+		$base = 'https://api.github.com/repos/' . $repo . '/';
+		$como = '';
 
 		/*
 		 * Sin distinguir mayúsculas, porque GitHub tampoco: el repositorio
@@ -78,7 +93,11 @@ class Malka_CRM_Updater {
 		 * de la dirección, no aparecer en alguna parte. Una dirección
 		 * ajena que lleve la nuestra escrita adentro no se firma.
 		 */
-		if ( 0 !== stripos( (string) $url, $mio ) ) {
+		if ( 0 === stripos( (string) $url, $base . 'releases/assets/' ) ) {
+			$como = 'application/octet-stream';
+		} elseif ( 0 === stripos( (string) $url, $base . 'contents/' ) ) {
+			$como = 'application/vnd.github.raw';
+		} else {
 			return $args;
 		}
 
@@ -87,10 +106,62 @@ class Malka_CRM_Updater {
 		}
 
 		$args['headers']['Authorization'] = 'Bearer ' . $llave;
-		// Sin esto GitHub devuelve la ficha en JSON en vez del archivo.
-		$args['headers']['Accept']        = 'application/octet-stream';
+		$args['headers']['Accept']        = $como;
 
 		return $args;
+	}
+
+	/**
+	 * Lo publicado como archivo dentro del repositorio.
+	 *
+	 * Una release se crea a mano en GitHub. Esto es la otra vía: dejar el
+	 * ZIP y una ficha con la versión guardados en el repositorio, y que el
+	 * panel los lea de ahí. Se publica con un commit, que es lo que de
+	 * verdad se hace cada vez que hay un arreglo.
+	 *
+	 * @return array|null Lo mismo que «ultima», o null.
+	 */
+	private static function publicado() {
+		$repo = self::repo();
+
+		if ( '' === $repo ) {
+			return null;
+		}
+
+		$args = array(
+			'timeout' => 10,
+			'headers' => array(
+				'Accept'     => 'application/vnd.github.raw',
+				'User-Agent' => 'Malka-CRM/' . MALKA_CRM_VERSION,
+			),
+		);
+
+		$llave = self::llave();
+
+		if ( '' !== $llave ) {
+			$args['headers']['Authorization'] = 'Bearer ' . $llave;
+		}
+
+		$base = 'https://api.github.com/repos/' . $repo . '/contents/';
+		$r    = wp_remote_get( $base . self::FICHA, $args );
+
+		if ( is_wp_error( $r ) || 200 !== (int) wp_remote_retrieve_response_code( $r ) ) {
+			return null;
+		}
+
+		$j = json_decode( wp_remote_retrieve_body( $r ), true );
+
+		if ( ! is_array( $j ) || empty( $j['version'] ) ) {
+			return null;
+		}
+
+		return array(
+			'repo'    => $repo,
+			'version' => ltrim( (string) $j['version'], 'vV' ),
+			'zip'     => $base . self::PAQUETE,
+			'notas'   => isset( $j['notas'] ) ? (string) $j['notas'] : '',
+			'fecha'   => isset( $j['fecha'] ) ? (string) $j['fecha'] : '',
+		);
 	}
 
 	/**
@@ -166,22 +237,30 @@ class Malka_CRM_Updater {
 		}
 
 		$r = wp_remote_get( 'https://api.github.com/repos/' . $repo . '/releases/latest', $args );
+		$j = ( is_wp_error( $r ) || 200 !== (int) wp_remote_retrieve_response_code( $r ) )
+			? null
+			: json_decode( wp_remote_retrieve_body( $r ), true );
 
-		if ( is_wp_error( $r ) || 200 !== (int) wp_remote_retrieve_response_code( $r ) ) {
+		if ( ! is_array( $j ) || empty( $j['tag_name'] ) ) {
+			/*
+			 * Sin release, se mira lo publicado como archivo dentro del
+			 * repositorio, que es la vía que se usa acá: cada arreglo se
+			 * publica con un commit, no creando una release a mano.
+			 */
+			$alt = self::publicado();
+
 			/*
 			 * Se guarda también el fracaso, un rato: si el repositorio no
 			 * existe o la llave venció, no tiene sentido preguntar en cada
 			 * carga de cada pantalla.
 			 */
-			set_site_transient( self::CACHE, array( 'repo' => $repo, 'version' => '' ), self::RATO );
-			return null;
-		}
+			set_site_transient(
+				self::CACHE,
+				$alt ? $alt : array( 'repo' => $repo, 'version' => '' ),
+				self::RATO
+			);
 
-		$j = json_decode( wp_remote_retrieve_body( $r ), true );
-
-		if ( ! is_array( $j ) || empty( $j['tag_name'] ) ) {
-			set_site_transient( self::CACHE, array( 'repo' => $repo, 'version' => '' ), self::RATO );
-			return null;
+			return $alt;
 		}
 
 		/*
