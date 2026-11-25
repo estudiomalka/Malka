@@ -156,6 +156,7 @@ class Malka_CRM_Dashboard {
 			'cargar'        => __( 'Cargar tus cuentas', 'malka-crm' ),
 			// Lo que no es trabajo ni plata, y sostiene las dos cosas.
 			'bienestar'     => __( 'Bienestar', 'malka-crm' ),
+			'habitos'       => __( 'Hábitos', 'malka-crm' ),
 			'cuerpo'        => __( 'Cuerpo', 'malka-crm' ),
 			'mente'         => __( 'Mente', 'malka-crm' ),
 			'vinculos'      => __( 'Vínculos', 'malka-crm' ),
@@ -187,7 +188,7 @@ class Malka_CRM_Dashboard {
 	 * @return string[]
 	 */
 	public static function vistas_bienestar() {
-		return array( 'bienestar', 'cuerpo', 'mente', 'vinculos', 'vos' );
+		return array( 'bienestar', 'habitos', 'cuerpo', 'mente', 'vinculos', 'vos' );
 	}
 
 	/**
@@ -586,6 +587,7 @@ class Malka_CRM_Dashboard {
 				$vista,
 				array(
 					'bienestar' => __( 'Resumen', 'malka-crm' ),
+					'habitos'   => __( 'Hábitos', 'malka-crm' ),
 					'cuerpo'    => __( 'Cuerpo', 'malka-crm' ),
 					'mente'     => __( 'Mente', 'malka-crm' ),
 					'vinculos'  => __( 'Vínculos', 'malka-crm' ),
@@ -992,7 +994,8 @@ class Malka_CRM_Dashboard {
 			'deudas'        => array( __( 'Finanzas', 'malka-crm' ), __( 'Lo que debes, lo que te cuesta deberlo y en qué orden conviene pagarlo', 'malka-crm' ) ),
 			'cargar'        => array( __( 'Finanzas', 'malka-crm' ), __( 'Tus cuentas escritas de una vez, para revisar y confirmar', 'malka-crm' ) ),
 			'bienestar'     => array( __( 'Bienestar', 'malka-crm' ), __( 'Lo que te sostiene fuera del trabajo', 'malka-crm' ) ),
-			'cuerpo'        => array( __( 'Bienestar', 'malka-crm' ), __( 'Exámenes, controles y cómo te estás moviendo', 'malka-crm' ) ),
+			'habitos'       => array( __( 'Bienestar', 'malka-crm' ), __( 'Lo que quieres hacer seguido, y cómo vienes', 'malka-crm' ) ),
+			'cuerpo'        => array( __( 'Bienestar', 'malka-crm' ), __( 'Tus medidas, cuándo las tomaste y cómo vienen', 'malka-crm' ) ),
 			'mente'         => array( __( 'Bienestar', 'malka-crm' ), __( 'Terapia, ánimo y descanso', 'malka-crm' ) ),
 			'vinculos'      => array( __( 'Bienestar', 'malka-crm' ), __( 'La gente que importa y cuándo fue la última vez', 'malka-crm' ) ),
 			'vos'           => array( __( 'Bienestar', 'malka-crm' ), __( 'Lo que haces porque te hace bien', 'malka-crm' ) ),
@@ -6925,11 +6928,17 @@ class Malka_CRM_Dashboard {
 	 */
 	public static function view_bienestar( $vista = 'bienestar' ) {
 		$areas = array(
+			'habitos'  => array(
+				'bienestar',
+				__( 'Hábitos', 'malka-crm' ),
+				__( 'Lo que quieres hacer seguido', 'malka-crm' ),
+				'',
+			),
 			'cuerpo'   => array(
 				'cuerpo',
 				__( 'Cuerpo', 'malka-crm' ),
-				__( 'Exámenes, controles y cómo te estás moviendo', 'malka-crm' ),
-				__( 'Acá van las fechas: el próximo control, el examen que toca repetir, los días que te moviste. Fechas y recordatorios, nunca resultados médicos.', 'malka-crm' ),
+				__( 'Tus medidas y cómo vienen en el tiempo', 'malka-crm' ),
+				'',
 			),
 			'mente'    => array(
 				'mente',
@@ -6969,8 +6978,21 @@ class Malka_CRM_Dashboard {
 			}
 			echo '</div>';
 			echo self::panel_inline(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			echo '<p class="esc-hint">' . esc_html__( 'Todavía está vacío: por ahora es el lugar, no el contenido.', 'malka-crm' ) . '</p>';
+			echo '<p class="esc-hint">' . esc_html__( 'Hábitos y Cuerpo ya funcionan. Mente, Vínculos y Vos todavía son el lugar, no el contenido.', 'malka-crm' ) . '</p>';
 			echo '</section></div>';
+			return ob_get_clean();
+		}
+
+		// Estas dos ya tienen su pantalla; las otras siguen siendo el lugar.
+		if ( 'habitos' === $vista && class_exists( 'Malka_CRM_Bienestar' ) ) {
+			echo Malka_CRM_Bienestar::render_habitos(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo '</div>';
+			return ob_get_clean();
+		}
+
+		if ( 'cuerpo' === $vista && class_exists( 'Malka_CRM_Bienestar' ) ) {
+			echo Malka_CRM_Bienestar::render_cuerpo(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo '</div>';
 			return ob_get_clean();
 		}
 

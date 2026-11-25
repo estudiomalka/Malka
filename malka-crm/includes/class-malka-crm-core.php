@@ -200,6 +200,7 @@ final class Malka_CRM_Core {
 		require_once MALKA_CRM_PATH . 'includes/class-malka-crm-cargar.php';
 		require_once MALKA_CRM_PATH . 'includes/class-malka-crm-updater.php';
 		require_once MALKA_CRM_PATH . 'includes/class-malka-crm-casa.php';
+		require_once MALKA_CRM_PATH . 'includes/class-malka-crm-bienestar.php';
 		require_once MALKA_CRM_PATH . 'includes/class-malka-crm-woocommerce.php';
 
 		if ( is_admin() ) {
@@ -213,6 +214,7 @@ final class Malka_CRM_Core {
 		// Actualizar en un clic. Queda dormido mientras no haya repositorio.
 		Malka_CRM_Updater::init();
 		Malka_CRM_Casa::init();
+		Malka_CRM_Bienestar::init();
 		Malka_CRM_Asistente::init();
 		$this->cpt         = new Malka_CRM_CPT();
 		$this->quotes      = new Malka_CRM_Quotes();

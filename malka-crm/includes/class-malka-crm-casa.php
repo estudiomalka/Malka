@@ -77,20 +77,76 @@ class Malka_CRM_Casa {
 		return $d['tareas'];
 	}
 
+	/** Cuántos colores distintos hay antes de repetir. */
+	const COLORES = 6;
+
+	/**
+	 * Qué color le toca a una persona.
+	 *
+	 * Por su lugar en la lista de gente, que sólo crece y nunca se
+	 * reordena: así Belén es del mismo color este mes, el que viene y en
+	 * los dos gráficos. Si saliera del orden del gráfico, cambiaría de
+	 * color cada vez que alguien hiciera más tareas que otro, y el color
+	 * dejaría de querer decir una persona para querer decir un puesto.
+	 *
+	 * @param string $quien Quién.
+	 * @return int 1..COLORES.
+	 */
+	public static function color_de( $quien ) {
+		$gente = self::gente();
+		$i     = array_search( $quien, $gente, true );
+
+		if ( false === $i ) {
+			// Alguien que no está en la lista: igual siempre el mismo.
+			$i = hexdec( substr( md5( (string) $quien ), 0, 6 ) );
+		}
+
+		return ( (int) $i % self::COLORES ) + 1;
+	}
+
+	/**
+	 * Quiénes hicieron algo, de un registro.
+	 *
+	 * Los registros viejos guardaban una sola persona en «quien». Los
+	 * nuevos guardan la lista en «quienes» y dejan «quien» escrito para
+	 * mostrar. Esto lee los dos sin que nada tenga que migrarse.
+	 *
+	 * @param array $r El registro.
+	 * @return string[]
+	 */
+	public static function quienes_de( $r ) {
+		if ( ! empty( $r['quienes'] ) && is_array( $r['quienes'] ) ) {
+			return array_values( $r['quienes'] );
+		}
+
+		return empty( $r['quien'] ) ? array() : array( (string) $r['quien'] );
+	}
+
 	/**
 	 * Anota que alguien hizo algo.
 	 *
-	 * @param string $tarea Qué se hizo.
-	 * @param string $quien Quién lo hizo.
-	 * @param string $fecha Y-m-d. Vacío: hoy.
-	 * @param string $nota  Opcional.
+	 * @param string          $tarea Qué se hizo.
+	 * @param string|string[] $quien Quién, o quiénes si lo hicieron juntos.
+	 * @param string          $fecha Y-m-d. Vacío: hoy.
+	 * @param string          $nota  Opcional.
 	 * @return int El id, o 0 si faltaba algo.
 	 */
 	public static function anotar( $tarea, $quien, $fecha = '', $nota = '' ) {
 		$tarea = trim( sanitize_text_field( (string) $tarea ) );
-		$quien = trim( sanitize_text_field( (string) $quien ) );
 
-		if ( '' === $tarea || '' === $quien ) {
+		// Una persona o varias: adentro siempre es una lista.
+		$quienes = array();
+
+		foreach ( (array) $quien as $q ) {
+			$q = trim( sanitize_text_field( (string) $q ) );
+
+			// Sin repetir: marcar dos veces a la misma no la hace trabajar más.
+			if ( '' !== $q && ! in_array( $q, $quienes, true ) ) {
+				$quienes[] = $q;
+			}
+		}
+
+		if ( '' === $tarea || ! $quienes ) {
 			return 0;
 		}
 
@@ -110,16 +166,20 @@ class Malka_CRM_Casa {
 		}
 
 		$d['registro'][] = array(
-			'id'    => $id,
-			'tarea' => $tarea,
-			'quien' => $quien,
-			'fecha' => $fecha,
-			'nota'  => trim( sanitize_text_field( (string) $nota ) ),
+			'id'      => $id,
+			'tarea'   => $tarea,
+			'quienes' => $quienes,
+			// Escrito, para mostrar y para que lo viejo siga leyéndose.
+			'quien'   => implode( ' y ', $quienes ),
+			'fecha'   => $fecha,
+			'nota'    => trim( sanitize_text_field( (string) $nota ) ),
 		);
 
 		// Las listas para elegir crecen solas con lo que se usa.
-		if ( ! in_array( $quien, $d['gente'], true ) ) {
-			$d['gente'][] = $quien;
+		foreach ( $quienes as $q ) {
+			if ( ! in_array( $q, $d['gente'], true ) ) {
+				$d['gente'][] = $q;
+			}
 		}
 
 		if ( ! in_array( $tarea, $d['tareas'], true ) ) {
@@ -200,22 +260,44 @@ class Malka_CRM_Casa {
 	 *
 	 * @param string $desde Y-m-d.
 	 * @param string $hasta Y-m-d.
-	 * @return array[] quien, n, pct; de mayor a menor.
+	 * Una tarea hecha entre dos se reparte entre las dos: media para cada
+	 * una. Si contara entera para cada quien, hacer todo junto daría 100%
+	 * y 100%, y el gráfico diría que en esta casa se trabaja el doble de
+	 * lo que se trabaja. Los porcentajes tienen que sumar cien.
+	 *
+	 * «n» es otra cosa: en cuántas participó cada quien, entero. Así
+	 * «4 · 50%» se lee como lo que es — estuvo en las cuatro, hizo la
+	 * mitad del trabajo.
+	 *
+	 * @param string $desde Y-m-d.
+	 * @param string $hasta Y-m-d.
+	 * @return array[] quien, n, parte, pct; de mayor a menor.
 	 */
 	public static function reparto( $desde = '', $hasta = '' ) {
+		$parte  = array();
 		$cuenta = array();
 
 		foreach ( self::lista( $desde, $hasta ) as $r ) {
-			$q = $r['quien'];
+			$quienes = self::quienes_de( $r );
 
-			if ( ! isset( $cuenta[ $q ] ) ) {
-				$cuenta[ $q ] = 0;
+			if ( ! $quienes ) {
+				continue;
 			}
 
-			$cuenta[ $q ]++;
+			$cada = 1 / count( $quienes );
+
+			foreach ( $quienes as $q ) {
+				if ( ! isset( $parte[ $q ] ) ) {
+					$parte[ $q ]  = 0.0;
+					$cuenta[ $q ] = 0;
+				}
+
+				$parte[ $q ] += $cada;
+				$cuenta[ $q ]++;
+			}
 		}
 
-		$total = array_sum( $cuenta );
+		$total = array_sum( $parte );
 
 		if ( ! $total ) {
 			return array();
@@ -223,23 +305,24 @@ class Malka_CRM_Casa {
 
 		$out = array();
 
-		foreach ( $cuenta as $q => $n ) {
+		foreach ( $parte as $q => $p ) {
 			$out[] = array(
 				'quien' => $q,
-				'n'     => $n,
-				'pct'   => (int) round( ( $n / $total ) * 100 ),
+				'n'     => $cuenta[ $q ],
+				'parte' => round( $p, 2 ),
+				'pct'   => (int) round( ( $p / $total ) * 100 ),
 			);
 		}
 
 		usort(
 			$out,
 			function ( $a, $b ) {
-				if ( $a['n'] === $b['n'] ) {
+				if ( $a['parte'] === $b['parte'] ) {
 					// Empatados, por nombre: el orden no puede bailar entre cargas.
 					return strcmp( $a['quien'], $b['quien'] );
 				}
 
-				return $b['n'] - $a['n'];
+				return $a['parte'] < $b['parte'] ? 1 : -1;
 			}
 		);
 
@@ -265,11 +348,23 @@ class Malka_CRM_Casa {
 			$quien = array();
 
 			foreach ( self::lista( $desde, $hasta ) as $r ) {
-				if ( ! isset( $quien[ $r['quien'] ] ) ) {
-					$quien[ $r['quien'] ] = 0;
+				$quienes = self::quienes_de( $r );
+
+				if ( ! $quienes ) {
+					continue;
 				}
 
-				$quien[ $r['quien'] ]++;
+				// Repartida, igual que arriba: el total de la semana tiene
+				// que ser la cantidad de tareas, no la de participaciones.
+				$cada = 1 / count( $quienes );
+
+				foreach ( $quienes as $q ) {
+					if ( ! isset( $quien[ $q ] ) ) {
+						$quien[ $q ] = 0;
+					}
+
+					$quien[ $q ] += $cada;
+				}
 			}
 
 			$out[] = array(
@@ -294,18 +389,38 @@ class Malka_CRM_Casa {
 		check_admin_referer( 'malka_crm_casa_anotar' );
 
 		$tarea = isset( $_POST['tarea'] ) ? sanitize_text_field( wp_unslash( $_POST['tarea'] ) ) : '';
-		$quien = isset( $_POST['quien'] ) ? sanitize_text_field( wp_unslash( $_POST['quien'] ) ) : '';
 		$fecha = isset( $_POST['fecha'] ) ? sanitize_text_field( wp_unslash( $_POST['fecha'] ) ) : '';
 		$nota  = isset( $_POST['nota'] ) ? sanitize_text_field( wp_unslash( $_POST['nota'] ) ) : '';
 
-		// Los selectores traen «otra»: ahí vale lo que se escribió al lado.
+		// Las casillas llegan como lista; el campo suelto, como un solo valor.
+		$quien = array();
+
+		if ( isset( $_POST['quien'] ) ) {
+			foreach ( (array) wp_unslash( $_POST['quien'] ) as $q ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+				$quien[] = sanitize_text_field( (string) $q );
+			}
+		}
+
+		// El selector de tareas trae «otra»: ahí vale lo que se escribió al lado.
 		if ( '__otra' === $tarea && isset( $_POST['tarea_nueva'] ) ) {
 			$tarea = sanitize_text_field( wp_unslash( $_POST['tarea_nueva'] ) );
 		}
 
-		if ( '__otro' === $quien && isset( $_POST['quien_nuevo'] ) ) {
-			$quien = sanitize_text_field( wp_unslash( $_POST['quien_nuevo'] ) );
+		/*
+		 * «Otra persona» se suma a lo marcado en vez de reemplazarlo: una
+		 * tarea puede ser de Belén y de alguien que todavía no está en la
+		 * lista, y antes elegir «otra» borraba a quien ya estaba elegido.
+		 */
+		if ( isset( $_POST['quien_nuevo'] ) ) {
+			$nuevo = sanitize_text_field( wp_unslash( $_POST['quien_nuevo'] ) );
+
+			if ( '' !== trim( $nuevo ) ) {
+				$quien[] = $nuevo;
+			}
 		}
+
+		// Un «__otro» viejo guardado en un marcador no se anota como nombre.
+		$quien = array_values( array_diff( $quien, array( '__otro', '__otra' ) ) );
 
 		$id = self::anotar( $tarea, $quien, $fecha, $nota );
 
@@ -419,18 +534,39 @@ class Malka_CRM_Casa {
 		foreach ( $reparto as $r ) {
 			printf(
 				'<div class="esc-casa__b"><span class="esc-casa__q">%1$s</span>' .
-				'<span class="esc-casa__t"><i style="width:%2$d%%"></i></span>' .
+				'<span class="esc-casa__t"><i style="width:%2$d%%;background:var(--esc-s%4$d)"></i></span>' .
 				'<span class="esc-casa__n">%3$s</span></div>',
 				esc_html( $r['quien'] ),
 				(int) $r['pct'],
 				esc_html(
 					sprintf(
-						/* translators: 1: cuántas, 2: porcentaje */
+						/* translators: 1: en cuántas participó, 2: porcentaje */
 						__( '%1$d · %2$d%%', 'malka-crm' ),
 						$r['n'],
 						$r['pct']
 					)
-				)
+				),
+				self::color_de( $r['quien'] )
+			);
+		}
+
+		/*
+		 * Si hubo algo hecho entre varios, los dos números dicen cosas
+		 * distintas y conviene decirlo una vez en vez de dejar que se
+		 * contradigan solos: participó en 4, hizo la mitad.
+		 */
+		$juntas = 0;
+
+		foreach ( $reparto as $r ) {
+			if ( abs( $r['parte'] - $r['n'] ) > 0.01 ) {
+				$juntas++;
+			}
+		}
+
+		if ( $juntas ) {
+			printf(
+				'<p class="esc-hint">%s</p>',
+				esc_html__( 'Lo que se hizo entre varios se reparte: el primer número es en cuántas participó cada quien, y el porcentaje, cuánto del trabajo le tocó.', 'malka-crm' )
 			);
 		}
 
@@ -471,23 +607,99 @@ class Malka_CRM_Casa {
 		foreach ( $semanas as $s ) {
 			$alto = (int) round( ( $s['total'] / $techo ) * 100 );
 
+			/*
+			 * Quién hizo qué parte de la semana, en el orden de siempre.
+			 *
+			 * Cada trozo mide contra la semana más alta, no contra su
+			 * propia semana: así los trozos apilados suman justo el alto
+			 * que le toca a esa semana y las ocho barras se comparan entre
+			 * sí. Medidos contra su semana, todas medirían lo mismo.
+			 */
+			$trozos = '';
+			$dice   = array();
+
+			if ( $s['total'] > 0 ) {
+				$suyo = $s['quien'];
+				uksort(
+					$suyo,
+					function ( $a, $b ) {
+						return self::color_de( $a ) - self::color_de( $b );
+					}
+				);
+
+				foreach ( $suyo as $q => $n ) {
+					if ( $n <= 0 ) {
+						continue;
+					}
+
+					$trozos .= sprintf(
+						'<i style="height:%1$F%%;background:var(--esc-s%2$d)"></i>',
+						( $n / $techo ) * 100,
+						self::color_de( $q )
+					);
+
+					$dice[] = $q . ' ' . number_format_i18n( $n, ( (float) $n === floor( $n ) ) ? 0 : 1 );
+				}
+			}
+
 			printf(
-				'<div class="esc-casa__rc" title="%3$s"><span class="esc-casa__rb"><i style="height:%1$d%%"></i></span>' .
+				'<div class="esc-casa__rc" title="%3$s"><span class="esc-casa__rb">%4$s</span>' .
 				'<span class="esc-casa__rl">%2$s</span></div>',
 				$s['total'] ? max( 4, $alto ) : 0,
 				esc_html( $s['rotulo'] ),
 				esc_attr(
 					sprintf(
-						/* translators: 1: cuántas, 2: semana del */
-						_n( '%1$d tarea · semana del %2$s', '%1$d tareas · semana del %2$s', $s['total'], 'malka-crm' ),
-						$s['total'],
-						date_i18n( 'j M', strtotime( $s['desde'] ) )
+						/* translators: 1: cuántas, 2: semana del, 3: quiénes */
+						__( '%1$s · semana del %2$s%3$s', 'malka-crm' ),
+						sprintf(
+							/* translators: cuántas tareas */
+							_n( '%s tarea', '%s tareas', (int) round( $s['total'] ), 'malka-crm' ),
+							number_format_i18n( $s['total'], ( (float) $s['total'] === floor( $s['total'] ) ) ? 0 : 1 )
+						),
+						date_i18n( 'j M', strtotime( $s['desde'] ) ),
+						$dice ? ' · ' . implode( ', ', $dice ) : ''
 					)
-				)
+				),
+				$trozos // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			);
 		}
 
-		echo '</div></div>';
+		echo '</div>';
+		echo self::leyenda(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo '</div>';
+
+		return ob_get_clean();
+	}
+
+	/**
+	 * Quién es cada color.
+	 *
+	 * En el gráfico de barras el nombre va al lado, así que el color es de
+	 * adorno. En el de las semanas no: ahí los trozos apilados no dicen de
+	 * quién son, y sin esto el color sería la única pista — que es
+	 * justamente lo que no se puede hacer.
+	 *
+	 * @return string
+	 */
+	private static function leyenda() {
+		$gente = self::gente();
+
+		if ( count( $gente ) < 2 ) {
+			return '';
+		}
+
+		ob_start();
+		echo '<ul class="esc-casa__ley">';
+
+		foreach ( $gente as $g ) {
+			printf(
+				'<li><i style="background:var(--esc-s%1$d)" aria-hidden="true"></i>%2$s</li>',
+				self::color_de( $g ),
+				esc_html( $g )
+			);
+		}
+
+		echo '</ul>';
 
 		return ob_get_clean();
 	}
@@ -572,26 +784,38 @@ class Malka_CRM_Casa {
 
 		echo '</label>';
 
-		echo '<label><span>' . esc_html__( 'Quién', 'malka-crm' ) . '</span>';
-
+		/*
+		 * Casillas, no una lista desplegable: hay tareas que se hacen entre
+		 * dos y con una sola opción había que elegir a quién no nombrar.
+		 * En una casa son dos o tres personas, así que están todas a la
+		 * vista y marcar varias es un clic más, no otra pantalla.
+		 */
 		if ( $gente ) {
-			echo '<select name="quien" data-casa-quien>';
+			echo '<fieldset class="esc-casa__q"><legend>' . esc_html__( 'Quién', 'malka-crm' ) . '</legend>';
 
-			foreach ( $gente as $g ) {
-				printf( '<option value="%1$s">%1$s</option>', esc_attr( $g ) );
+			foreach ( $gente as $i => $g ) {
+				printf(
+					'<label class="esc-casa__qi"><input type="checkbox" name="quien[]" value="%1$s"%2$s /><span>%3$s</span></label>',
+					esc_attr( $g ),
+					0 === $i ? ' checked' : '',
+					esc_html( $g )
+				);
 			}
 
-			printf( '<option value="__otro">%s</option>', esc_html__( 'Otra persona…', 'malka-crm' ) );
-			echo '</select>';
 			printf(
-				'<input type="text" name="quien_nuevo" placeholder="%s" data-casa-quien-nuevo hidden />',
+				'<label class="esc-casa__qi"><input type="checkbox" data-casa-otro /><span>%s</span></label>',
+				esc_html__( 'Otra persona…', 'malka-crm' )
+			);
+			printf(
+				'<input type="text" name="quien_nuevo" class="esc-casa__qn" placeholder="%s" data-casa-quien-nuevo hidden />',
 				esc_attr__( 'Quién', 'malka-crm' )
 			);
+			echo '</fieldset>';
 		} else {
-			printf( '<input type="text" name="quien" placeholder="%s" required />', esc_attr__( 'Tu nombre', 'malka-crm' ) );
+			echo '<label><span>' . esc_html__( 'Quién', 'malka-crm' ) . '</span>';
+			printf( '<input type="text" name="quien[]" placeholder="%s" required />', esc_attr__( 'Tu nombre', 'malka-crm' ) );
+			echo '</label>';
 		}
-
-		echo '</label>';
 
 		printf(
 			'<label><span>%1$s</span><input type="date" name="fecha" value="%2$s" max="%2$s" /></label>',

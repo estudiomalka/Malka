@@ -11898,19 +11898,17 @@ document.addEventListener( 'change', function ( e ) {
 		return;
 	}
 
-	[
-		[ '[data-casa-tarea]', '[data-casa-tarea-nueva]', '__otra' ],
-		[ '[data-casa-quien]', '[data-casa-quien-nuevo]', '__otro' ]
-	].forEach( function ( par ) {
-		var sel   = form.querySelector( par[ 0 ] );
-		var campo = form.querySelector( par[ 1 ] );
+	// La tarea sigue siendo una sola: lista desplegable con su «Otra…».
+	( function () {
+		var sel   = form.querySelector( '[data-casa-tarea]' );
+		var campo = form.querySelector( '[data-casa-tarea-nueva]' );
 
 		if ( ! sel || ! campo ) {
 			return;
 		}
 
 		function mirar() {
-			var otra = sel.value === par[ 2 ];
+			var otra = sel.value === '__otra';
 
 			campo.hidden   = ! otra;
 			campo.required = otra;
@@ -11922,6 +11920,72 @@ document.addEventListener( 'change', function ( e ) {
 
 		sel.addEventListener( 'change', mirar );
 		mirar();
+	}() );
+
+	/*
+	 * Quién, en cambio, puede ser más de uno: son casillas. La de «Otra
+	 * persona…» sólo abre el campo de al lado; no es un nombre y no se
+	 * manda, así que no reemplaza a nadie que ya esté marcado.
+	 */
+	( function () {
+		var otro  = form.querySelector( '[data-casa-otro]' );
+		var campo = form.querySelector( '[data-casa-quien-nuevo]' );
+
+		if ( ! otro || ! campo ) {
+			return;
+		}
+
+		function mirar() {
+			campo.hidden   = ! otro.checked;
+			campo.required = otro.checked;
+
+			if ( otro.checked ) {
+				campo.focus();
+			} else {
+				campo.value = '';
+			}
+		}
+
+		otro.addEventListener( 'change', mirar );
+		mirar();
+	}() );
+
+	/*
+	 * Y al menos una persona tiene que quedar marcada: sin eso el envío
+	 * vuelve con «falta algo» y no se entiende qué faltaba.
+	 */
+	form.addEventListener( 'submit', function ( e ) {
+		var cajas = form.querySelectorAll( 'input[name="quien[]"]' );
+		var nuevo = form.querySelector( '[data-casa-quien-nuevo]' );
+		var hay   = false;
+		var i;
+
+		if ( ! cajas.length ) {
+			return;
+		}
+
+		for ( i = 0; i < cajas.length; i++ ) {
+			if ( 'checkbox' !== cajas[ i ].type || cajas[ i ].checked ) {
+				hay = true;
+			}
+		}
+
+		if ( ! hay && nuevo && nuevo.value.trim() ) {
+			hay = true;
+		}
+
+		if ( ! hay ) {
+			e.preventDefault();
+			cajas[ 0 ].focus();
+
+			if ( cajas[ 0 ].setCustomValidity ) {
+				cajas[ 0 ].setCustomValidity( 'Marca al menos a una persona.' );
+				cajas[ 0 ].reportValidity();
+				setTimeout( function () {
+					cajas[ 0 ].setCustomValidity( '' );
+				}, 2000 );
+			}
+		}
 	} );
 }() );
 

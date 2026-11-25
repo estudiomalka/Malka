@@ -13,6 +13,21 @@
 	--esc-panel:   #FFFFFF;
 	--esc-side:    #FFFFFF;
 	--esc-ink:     #000000;
+
+	/* Un color por persona, para los gráficos de la casa. Son los únicos
+	   colores del panel que no quieren decir «entra plata» o «está
+	   atrasado»: acá el color es sólo identidad, y por eso nunca va solo
+	   —al lado siempre está el nombre, o una leyenda.
+
+	   El orden es fijo: una persona se queda con su color aunque suba o
+	   baje en el gráfico. Validados contra el blanco del panel y entre
+	   pares contiguos, también para quien no distingue colores. */
+	--esc-s1:      #257DE0;
+	--esc-s2:      #F47230;
+	--esc-s3:      #00B894;
+	--esc-s4:      #F2A600;
+	--esc-s5:      #EE7FAC;
+	--esc-s6:      #008A17;
 	/* Grises medidos contra blanco y contra el fondo: 5,1:1 y 4,5:1. El de
 	   iOS (#8E8E93) daba 3,4:1 y un dato de 13 px no se leía. */
 	--esc-ink-2:   #6E6E73;
@@ -64,6 +79,15 @@
 		--esc-ink-4:   #5A5A60;
 		--esc-hair:    #262628;
 		--esc-fill:    #1F1F21;
+
+		/* Los seis de la casa, pisados para el fondo oscuro. */
+		--esc-s1:      #338CED;
+		--esc-s2:      #E76624;
+		--esc-s3:      #00A888;
+		--esc-s4:      #D28E05;
+		--esc-s5:      #E24D8B;
+		--esc-s6:      #0AAC23;
+
 		/* De noche se invierte: lo seleccionado es blanco con texto negro. */
 		--esc-accent:  #FFFFFF;
 		--esc-accent-f:#FFFFFF;
@@ -93,6 +117,15 @@
 	--esc-ink-4:   #5A5A60;
 	--esc-hair:    #262628;
 	--esc-fill:    #1F1F21;
+
+	/* Los mismos seis, pisados para el fondo oscuro: no es el mismo valor
+	   aclarado, es otro paso de la misma rampa, medido contra #161617. */
+	--esc-s1:      #338CED;
+	--esc-s2:      #E76624;
+	--esc-s3:      #00A888;
+	--esc-s4:      #D28E05;
+	--esc-s5:      #E24D8B;
+	--esc-s6:      #0AAC23;
 	--esc-accent:  #FFFFFF;
 	--esc-accent-f:#FFFFFF;
 	--esc-accent-t:#FFFFFF;
@@ -11584,9 +11617,28 @@ svg[viewBox="0 0 20 20"] * { stroke-width: 1.2; }
 .malka-esc .esc-casa__r { padding: 0 var(--esc-pad) 1.2rem; }
 .malka-esc .esc-casa__rg { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: .4rem; margin-top: .6rem; }
 .malka-esc .esc-casa__rc { display: flex; flex-direction: column; align-items: center; gap: .3rem; }
-.malka-esc .esc-casa__rb { display: flex; align-items: flex-end; height: 56px; width: 100%; }
-.malka-esc .esc-casa__rb i { display: block; width: 100%; background: var(--esc-fill); border-radius: 6px 6px 0 0; }
-.malka-esc .esc-casa__rc:hover .esc-casa__rb i { background: var(--esc-hair); }
+/* La columna de la semana mide siempre 56px; los trozos se apilan desde
+   abajo y cada uno mide contra la semana más alta, así que lo que sobra
+   arriba es justo lo que le faltó a esa semana. */
+.malka-esc .esc-casa__rb {
+	display: flex;
+	flex-direction: column-reverse;
+	justify-content: flex-start;
+	height: 56px;
+	width: 100%;
+}
+.malka-esc .esc-casa__rb i {
+	display: block;
+	width: 100%;
+	min-height: 2px;
+	background: var(--esc-ink-4);
+}
+/* Dos píxeles de panel entre trozo y trozo: sin eso, dos colores
+   contiguos se leen como uno solo y la pila deja de contarse. */
+.malka-esc .esc-casa__rb i + i { margin-bottom: 2px; }
+.malka-esc .esc-casa__rb i:last-child { border-radius: 6px 6px 0 0; }
+.malka-esc .esc-casa__rb i:first-child { border-radius: 0 0 2px 2px; }
+.malka-esc .esc-casa__rb i:only-child { border-radius: 6px 6px 2px 2px; }
 .malka-esc .esc-casa__rl { font-size: .68rem; color: var(--esc-ink-4); }
 
 /* Lo anotado. */
@@ -11627,10 +11679,69 @@ svg[viewBox="0 0 20 20"] * { stroke-width: 1.2; }
 	.malka-esc .esc-casa__fd { display: none; }
 }
 
+/* Quién hizo la tarea: casillas en línea, no un recuadro aparte. El
+   <fieldset> trae borde y márgenes propios del navegador que no se
+   parecen en nada a los demás campos del formulario. */
+.malka-esc .esc-casa__q {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: .3rem .5rem;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	min-width: 0;
+	/* Abajo, para que las casillas queden a la altura de los campos de
+	   al lado y no flotando sobre ellos. */
+	align-self: end;
+}
+.malka-esc .esc-casa__q > legend {
+	float: left;
+	width: 100%;
+	padding: 0;
+	margin: 0 0 .25rem;
+	font-size: .74rem;
+	color: var(--esc-ink-3);
+}
+.malka-esc .esc-casa__qi {
+	display: inline-flex;
+	align-items: center;
+	gap: .32rem;
+	padding: .3rem .6rem;
+	border: 1px solid var(--esc-hair);
+	border-radius: var(--esc-pill);
+	background: var(--esc-panel);
+	font-size: .86rem;
+	line-height: 1.2;
+	cursor: pointer;
+	white-space: nowrap;
+}
+.malka-esc .esc-casa__qi input { margin: 0; flex: none; }
+/* Marcada se nota sin depender del color de la casilla del sistema. */
+.malka-esc .esc-casa__qi:has( input:checked ) {
+	border-color: var(--esc-ink);
+	background: var(--esc-fill);
+}
+.malka-esc .esc-casa__qi:focus-within { outline: 2px solid var(--esc-ink); outline-offset: 1px; }
+.malka-esc .esc-casa__qn { margin-top: .3rem; width: 100%; }
+
 /* El total del reparto, a la derecha de su título. */
 .malka-esc .esc-casa__tot { margin-left: auto; }
 
-/* Las barras de las semanas en el gris de los datos, no en el del fondo:
-   con --esc-fill apenas se distinguían del panel y el gráfico no se leía. */
-.malka-esc .esc-casa__rb i { background: var(--esc-ink-4); }
-.malka-esc .esc-casa__rc:hover .esc-casa__rb i { background: var(--esc-ink); }
+/* Un trozo sin color asignado —no debería pasar— cae en el gris de los
+   datos, no en el del fondo: con --esc-fill no se distinguía del panel. */
+.malka-esc .esc-casa__rb i:not([style*="--esc-s"]) { background: var(--esc-ink-4); }
+
+/* Quién es cada color. */
+.malka-esc .esc-casa__ley {
+	display: flex;
+	flex-wrap: wrap;
+	gap: .3rem .9rem;
+	margin: .8rem 0 0;
+	padding: 0;
+	list-style: none;
+	font-size: .76rem;
+	color: var(--esc-ink-3);
+}
+.malka-esc .esc-casa__ley li { display: flex; align-items: center; gap: .35rem; }
+.malka-esc .esc-casa__ley i { width: 10px; height: 10px; border-radius: 3px; flex: none; }
