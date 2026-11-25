@@ -65,7 +65,7 @@ class Malka_CRM_Settings {
 			 * De dónde se baja la próxima versión del panel, como
 			 * «usuario/repositorio». Vacío: no se busca ninguna.
 			 */
-			'repo'            => 'estudiomalka/malka',
+			'repo'            => 'estudiomalka/Malka',
 			// Sólo para un repositorio privado. No se muestra nunca.
 			'repo_token'      => '',
 			'icono_app'       => '',

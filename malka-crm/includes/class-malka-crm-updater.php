@@ -67,7 +67,18 @@ class Malka_CRM_Updater {
 		// Sólo las descargas de releases de este repositorio, y nada más.
 		$mio = 'https://api.github.com/repos/' . $repo . '/releases/assets/';
 
-		if ( 0 !== strpos( (string) $url, $mio ) ) {
+		/*
+		 * Sin distinguir mayúsculas, porque GitHub tampoco: el repositorio
+		 * se llama «Malka» y escrito «malka» entra igual, pero las
+		 * direcciones que devuelve la API vienen con el nombre tal cual
+		 * está registrado. Comparado letra por letra, la llave no se
+		 * adjuntaba y la descarga fallaba con un «no existe».
+		 *
+		 * Lo que no se afloja es dónde empieza: tiene que ser el comienzo
+		 * de la dirección, no aparecer en alguna parte. Una dirección
+		 * ajena que lleve la nuestra escrita adentro no se firma.
+		 */
+		if ( 0 !== stripos( (string) $url, $mio ) ) {
 			return $args;
 		}
 
