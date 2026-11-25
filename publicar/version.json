@@ -1,5 +1,5 @@
 {
-  "version": "5.2.1",
-  "fecha": "2026-11-25T23:00:00Z",
-  "notas": "Los gráficos de la casa en grises, no en colores: un tono por persona, como el resto del panel. Una tarea puede ser de varias personas y lo hecho entre varios se reparte. Bienestar: hábitos con racha, y medidas del cuerpo con tus propias metas. Y un botón para buscar actualizaciones cuando quieras."
+  "version": "5.2.2",
+  "fecha": "2026-11-26T00:10:00Z",
+  "notas": "Bienestar ahora se ve como el resto del panel: le faltaba todo el CSS. El resumen muestra cómo vienes en vez de repetir las solapas. Los gráficos de la casa en grises, una tarea puede ser de varias personas, y las medidas del cuerpo aceptan tus propias metas."
 }

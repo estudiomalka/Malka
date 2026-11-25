@@ -503,6 +503,121 @@ class Malka_CRM_Bienestar {
 	/* ─────────────────────────────  Pantallas  ────────────────────────── */
 
 	/**
+	 * El resumen: cómo viene hoy, en dos líneas.
+	 *
+	 * No repite los nombres de las solapas —eso ya está arriba— sino el
+	 * estado: cuántos hábitos van hoy y cuál fue la última medición.
+	 *
+	 * @return string
+	 */
+	public static function resumen() {
+		$habitos = self::habitos();
+		$medidas = self::medidas();
+		$tipos   = self::tipos();
+
+		ob_start();
+		echo '<div class="esc-bien__r">';
+
+		// Hábitos de hoy.
+		echo '<div class="esc-bien__c">';
+		printf( '<span class="esc-lbl">%s</span>', esc_html__( 'Hábitos de hoy', 'malka-crm' ) );
+
+		if ( ! $habitos ) {
+			printf(
+				'<p class="esc-bien__v"><a href="%1$s">%2$s</a></p>',
+				esc_url( Malka_CRM_Dashboard::view_url( 'habitos' ) ),
+				esc_html__( 'Todavía no hay ninguno', 'malka-crm' )
+			);
+		} else {
+			$van = 0;
+
+			foreach ( $habitos as $h ) {
+				if ( $h['hoy'] ) {
+					$van++;
+				}
+			}
+
+			printf(
+				'<p class="esc-bien__n"><a href="%1$s"><em>%2$d</em> <span>%3$s</span></a></p>',
+				esc_url( Malka_CRM_Dashboard::view_url( 'habitos' ) ),
+				(int) $van,
+				esc_html(
+					sprintf(
+						/* translators: cuántos hábitos hay en total */
+						__( 'de %d', 'malka-crm' ),
+						count( $habitos )
+					)
+				)
+			);
+
+			// Los que faltan, por su nombre: el número solo no dice qué hacer.
+			$faltan = array();
+
+			foreach ( $habitos as $h ) {
+				if ( ! $h['hoy'] ) {
+					$faltan[] = $h['nombre'];
+				}
+			}
+
+			if ( $faltan ) {
+				printf(
+					'<p class="esc-bien__d">%s</p>',
+					esc_html(
+						sprintf(
+							/* translators: los hábitos que faltan */
+							__( 'Falta: %s', 'malka-crm' ),
+							implode( ', ', array_slice( $faltan, 0, 4 ) )
+						)
+					)
+				);
+			}
+		}
+
+		echo '</div>';
+
+		// La última medición.
+		echo '<div class="esc-bien__c">';
+		printf( '<span class="esc-lbl">%s</span>', esc_html__( 'Última medición', 'malka-crm' ) );
+
+		if ( ! $medidas ) {
+			printf(
+				'<p class="esc-bien__v"><a href="%1$s">%2$s</a></p>',
+				esc_url( Malka_CRM_Dashboard::view_url( 'cuerpo' ) ),
+				esc_html__( 'Todavía no hay nada anotado', 'malka-crm' )
+			);
+		} else {
+			$u     = $medidas[0];
+			$dice  = array();
+
+			foreach ( $tipos as $t ) {
+				if ( ! isset( $u['valores'][ $t['clave'] ] ) ) {
+					continue;
+				}
+
+				$dice[] = $t['nombre'] . ' ' .
+					number_format_i18n( (float) $u['valores'][ $t['clave'] ], isset( $t['dec'] ) ? (int) $t['dec'] : 1 ) .
+					( $t['unidad'] ? ' ' . $t['unidad'] : '' );
+			}
+
+			printf(
+				'<p class="esc-bien__n"><a href="%1$s"><em>%2$s</em></a></p><p class="esc-bien__d">%3$s</p>',
+				esc_url( Malka_CRM_Dashboard::view_url( 'cuerpo' ) ),
+				esc_html( implode( ' · ', $dice ) ),
+				esc_html( date_i18n( 'j \d\e F', strtotime( $u['fecha'] ) ) )
+			);
+		}
+
+		echo '</div></div>';
+
+		printf(
+			'<p class="esc-hint">%s</p>',
+			esc_html__( 'Mente, Vínculos y Vos todavía están vacíos: por ahora son el lugar, no el contenido.', 'malka-crm' )
+		);
+
+		return ob_get_clean();
+	}
+
+	/**
 	 * Hábitos: marcar el día y ver la racha.
 	 *
 	 * @return string

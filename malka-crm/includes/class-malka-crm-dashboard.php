@@ -6992,21 +6992,14 @@ class Malka_CRM_Dashboard {
 		echo '<div class="esc-vista">';
 
 		if ( 'bienestar' === $vista ) {
+			/*
+			 * El resumen muestra cómo viene cada cosa, no los nombres de
+			 * las solapas: eso ya está arriba y repetirlo era hacerla
+			 * elegir dos veces lo mismo.
+			 */
 			echo '<section class="esc-panel">';
-			echo '<div class="esc-atajos">';
-			foreach ( $areas as $k => $a ) {
-				printf(
-					'<a class="esc-atajo" href="%1$s" data-inline="%5$s" aria-controls="esc-inline" aria-expanded="false">%2$s<span class="esc-atajo__t">%3$s</span><span class="esc-atajo__d">%4$s</span></a>',
-					esc_url( self::view_url( $k ) ),
-					self::icon( $a[0] ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-					esc_html( $a[1] ),
-					esc_html( $a[2] ),
-					esc_attr( $a[1] )
-				);
-			}
-			echo '</div>';
-			echo self::panel_inline(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			echo '<p class="esc-hint">' . esc_html__( 'Hábitos y Cuerpo ya funcionan. Mente, Vínculos y Vos todavía son el lugar, no el contenido.', 'malka-crm' ) . '</p>';
+			echo self::head( 'bienestar', __( 'Cómo vienes', 'malka-crm' ), __( 'Lo de hoy, de un vistazo', 'malka-crm' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo class_exists( 'Malka_CRM_Bienestar' ) ? Malka_CRM_Bienestar::resumen() : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			echo '</section></div>';
 			return ob_get_clean();
 		}

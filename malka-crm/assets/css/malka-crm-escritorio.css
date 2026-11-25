@@ -11750,3 +11750,166 @@ svg[viewBox="0 0 20 20"] * { stroke-width: 1.2; }
 }
 .malka-esc .esc-casa__ley li { display: flex; align-items: center; gap: .35rem; }
 .malka-esc .esc-casa__ley i { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+
+/* ─────────────────────────────  Bienestar  ─────────────────────────────
+   Los mismos materiales que el resto del panel: campos apilados sobre su
+   rótulo chico, pelos de 1 px para separar, grises para lo secundario y
+   nada de color. */
+
+/* El resumen: cómo viene hoy. */
+.malka-esc .esc-bien__r {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+	gap: 1rem 2rem;
+	padding: .2rem var(--esc-pad) 0;
+}
+.malka-esc .esc-bien__c { min-width: 0; }
+.malka-esc .esc-bien__n { margin: .25rem 0 0; }
+.malka-esc .esc-bien__n a { color: inherit; text-decoration: none; }
+.malka-esc .esc-bien__n a:hover em { text-decoration: underline; }
+.malka-esc .esc-bien__n em {
+	font-style: normal;
+	font-size: 1.5rem;
+	font-weight: 600;
+	letter-spacing: -.02em;
+}
+.malka-esc .esc-bien__n span { color: var(--esc-ink-3); font-size: .9rem; }
+.malka-esc .esc-bien__d { margin: .1rem 0 0; font-size: .82rem; color: var(--esc-ink-3); }
+.malka-esc .esc-bien__v { margin: .25rem 0 0; font-size: .9rem; color: var(--esc-ink-3); }
+.malka-esc .esc-bien__v a { color: inherit; }
+
+/* ─── Hábitos ─── */
+.malka-esc .esc-hab__l { list-style: none; margin: 0; padding: 0 var(--esc-pad); }
+.malka-esc .esc-hab__i {
+	display: grid;
+	grid-template-columns: 22px minmax(0, 1fr) auto auto;
+	align-items: center;
+	gap: .7rem;
+	padding: .6rem 0;
+	border-top: 1px solid var(--esc-hair);
+}
+.malka-esc .esc-hab__l > .esc-hab__i:first-child { border-top: 0; }
+.malka-esc .esc-hab__t { display: flex; flex-direction: column; gap: .1rem; min-width: 0; }
+.malka-esc .esc-hab__t b { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.malka-esc .esc-hab__t i { font-style: normal; font-size: .78rem; color: var(--esc-ink-3); }
+
+/* Las últimas cuatro semanas: un cuadrito por día. */
+.malka-esc .esc-hab__m { display: grid; grid-template-columns: repeat(14, 1fr); gap: 2px; }
+.malka-esc .esc-hab__m i {
+	width: 8px;
+	height: 8px;
+	border-radius: 2px;
+	background: var(--esc-fill);
+	border: 1px solid var(--esc-hair);
+}
+.malka-esc .esc-hab__m i.on { background: var(--esc-ink); border-color: var(--esc-ink); }
+.malka-esc .esc-hab__x button { opacity: 0; transition: opacity .12s; }
+.malka-esc .esc-hab__i:hover .esc-hab__x button,
+.malka-esc .esc-hab__x button:focus-visible { opacity: 1; }
+
+/* Agregar un hábito. */
+.malka-esc .esc-hab__n {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	gap: .5rem;
+	align-items: end;
+	margin: 1rem var(--esc-pad) 0;
+	padding-top: 1rem;
+	border-top: 1px solid var(--esc-hair);
+}
+
+/* ─── Medidas ─── */
+.malka-esc .esc-med__p { margin: 0 var(--esc-pad) .9rem; }
+
+/* Los formularios: rótulo chico arriba, campo abajo, como en toda la app. */
+.malka-esc .esc-med__n {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+	gap: .5rem .6rem;
+	align-items: end;
+	margin: 0 var(--esc-pad) 1rem;
+}
+.malka-esc .esc-med__n label { display: flex; flex-direction: column; gap: .2rem; min-width: 0; }
+.malka-esc .esc-med__n span { font-size: .74rem; color: var(--esc-ink-3); }
+.malka-esc .esc-med__n input {
+	width: 100%;
+	min-width: 0;
+	padding: .42rem .6rem;
+	border: 1px solid var(--esc-hair);
+	border-radius: var(--esc-r);
+	background: var(--esc-panel);
+	color: var(--esc-ink);
+	font: inherit;
+	font-size: .9rem;
+}
+/* El botón ocupa lo suyo, no una columna entera: estirado parecía un
+   bloque más del formulario y no la acción que lo cierra. */
+.malka-esc .esc-med__n button { white-space: nowrap; justify-self: start; }
+.malka-esc .esc-hab__n button { justify-self: start; }
+
+/* «Medir otra cosa» y «Mis metas»: plegados, para no competir con lo
+   de todos los días, que es anotar. */
+.malka-esc .esc-med__mas { margin: 0 var(--esc-pad) 1rem; }
+.malka-esc .esc-med__mas > summary {
+	cursor: pointer;
+	font-size: .84rem;
+	color: var(--esc-ink-2);
+	padding: .35rem 0;
+	list-style: none;
+}
+.malka-esc .esc-med__mas > summary::-webkit-details-marker { display: none; }
+.malka-esc .esc-med__mas > summary::before { content: "+ "; color: var(--esc-ink-3); }
+.malka-esc .esc-med__mas[open] > summary::before { content: "− "; }
+.malka-esc .esc-med__mas > summary:hover { color: var(--esc-ink); }
+.malka-esc .esc-med__mas .esc-med__n,
+.malka-esc .esc-med__mas .esc-hint { margin-left: 0; margin-right: 0; }
+.malka-esc .esc-med__mas[open] {
+	padding: .2rem 0 .8rem;
+	border-bottom: 1px solid var(--esc-hair);
+}
+
+/* El gráfico de una medida. */
+.malka-esc .esc-med__g {
+	margin: 0 var(--esc-pad) 1.2rem;
+	padding-top: 1rem;
+	border-top: 1px solid var(--esc-hair);
+}
+.malka-esc .esc-med__gh {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: .4rem;
+	margin-bottom: .5rem;
+}
+.malka-esc .esc-med__gh b { font-weight: 500; }
+.malka-esc .esc-med__gh span { font-size: .82rem; color: var(--esc-ink-3); font-variant-numeric: tabular-nums; }
+.malka-esc .esc-med__g svg { display: block; width: 100%; height: 90px; color: var(--esc-ink); }
+.malka-esc .esc-med__ge {
+	display: flex;
+	justify-content: space-between;
+	font-size: .72rem;
+	color: var(--esc-ink-4);
+	font-variant-numeric: tabular-nums;
+}
+.malka-esc .esc-med__meta {
+	margin: .4rem 0 0;
+	font-size: .82rem;
+	color: var(--esc-ink-2);
+	font-variant-numeric: tabular-nums;
+}
+
+/* La tabla de lo anotado. */
+.malka-esc .esc-med__t { font-variant-numeric: tabular-nums; }
+.malka-esc .esc-med__t td form { display: inline; }
+.malka-esc .esc-med__t td:last-child button { opacity: 0; transition: opacity .12s; }
+.malka-esc .esc-med__t tr:hover td:last-child button,
+.malka-esc .esc-med__t td:last-child button:focus-visible { opacity: 1; }
+
+@media ( max-width: 640px ) {
+	.malka-esc .esc-med__n { grid-template-columns: 1fr 1fr; }
+	.malka-esc .esc-med__n button { grid-column: 1 / -1; }
+	.malka-esc .esc-hab__i { grid-template-columns: 22px minmax(0, 1fr) auto; }
+	/* El cuadrito de los días se va: en el teléfono no se lee igual. */
+	.malka-esc .esc-hab__m { display: none; }
+}
