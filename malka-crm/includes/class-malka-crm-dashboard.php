@@ -4188,11 +4188,19 @@ class Malka_CRM_Dashboard {
 		echo '</div>';
 
 		if ( '' !== $repo ) {
-			$u   = Malka_CRM_Updater::ultima();
+			/*
+			 * Forzado: esta pantalla existe para saber qué pasa. Usar lo
+			 * guardado acá sería contestar con la foto de hace seis horas
+			 * justo cuando alguien vino a averiguar por qué no funciona.
+			 */
+			$u   = Malka_CRM_Updater::ultima( true );
 			$hay = $u && version_compare( $u['version'], MALKA_CRM_VERSION, '>' );
 
 			if ( ! $u ) {
-				$dice = __( 'No se pudo leer ese repositorio. Revisa el nombre y, si es privado, la llave.', 'malka-crm' );
+				$motivo = Malka_CRM_Updater::motivo();
+				$dice   = $motivo
+					? $motivo
+					: __( 'No se pudo leer ese repositorio. Revisa el nombre y, si es privado, la llave.', 'malka-crm' );
 			} elseif ( $hay ) {
 				$dice = sprintf(
 					/* translators: 1: versión publicada, 2: versión instalada */

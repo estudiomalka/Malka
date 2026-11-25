@@ -33,6 +33,9 @@ class Malka_CRM_Updater {
 	/** Dónde se guarda la última respuesta. */
 	const CACHE = 'malka_crm_ultima_version';
 
+	/** Por qué falló la última consulta, para poder decirlo. */
+	private static $motivo = '';
+
 	/** La ficha con la versión publicada, dentro del repositorio. */
 	const FICHA = 'publicar/version.json';
 
@@ -155,13 +158,32 @@ class Malka_CRM_Updater {
 		$base = 'https://api.github.com/repos/' . $repo . '/contents/';
 		$r    = wp_remote_get( $base . self::FICHA, $args );
 
-		if ( is_wp_error( $r ) || 200 !== (int) wp_remote_retrieve_response_code( $r ) ) {
+		if ( is_wp_error( $r ) ) {
+			self::$motivo = sprintf(
+				/* translators: el error de red */
+				__( 'El sitio no pudo conectarse a GitHub: %s. Suele ser el hosting bloqueando las salidas a internet.', 'malka-crm' ),
+				$r->get_error_message()
+			);
+			return null;
+		}
+
+		$codigo = (int) wp_remote_retrieve_response_code( $r );
+
+		if ( 200 !== $codigo ) {
+			self::$motivo = 404 === $codigo
+				? __( 'GitHub dice que ahí no hay nada publicado. Revisa el nombre del repositorio, y que sea público o que la llave sirva.', 'malka-crm' )
+				: sprintf(
+					/* translators: el código de respuesta */
+					__( 'GitHub contestó %d al pedir el archivo de versión.', 'malka-crm' ),
+					$codigo
+				);
 			return null;
 		}
 
 		$j = json_decode( wp_remote_retrieve_body( $r ), true );
 
 		if ( ! is_array( $j ) || empty( $j['version'] ) ) {
+			self::$motivo = __( 'Se leyó el archivo de versión pero no se entendió lo que trae.', 'malka-crm' );
 			return null;
 		}
 
@@ -247,6 +269,33 @@ class Malka_CRM_Updater {
 		}
 
 		$r = wp_remote_get( 'https://api.github.com/repos/' . $repo . '/releases/latest', $args );
+
+		/*
+		 * Por qué falló, en palabras. Antes todos los fracasos decían lo
+		 * mismo —«no se pudo leer ese repositorio»— y eso vale igual para
+		 * un nombre mal escrito que para un hosting que no deja salir a
+		 * internet. Son problemas distintos y se arreglan distinto.
+		 */
+		self::$motivo = '';
+
+		if ( is_wp_error( $r ) ) {
+			self::$motivo = sprintf(
+				/* translators: el error de red */
+				__( 'El sitio no pudo conectarse a GitHub: %s. Suele ser el hosting bloqueando las salidas a internet.', 'malka-crm' ),
+				$r->get_error_message()
+			);
+		} elseif ( 200 !== (int) wp_remote_retrieve_response_code( $r ) ) {
+			$codigo = (int) wp_remote_retrieve_response_code( $r );
+
+			if ( 404 !== $codigo ) {
+				self::$motivo = sprintf(
+					/* translators: el código de respuesta */
+					__( 'GitHub contestó %d al pedir las versiones.', 'malka-crm' ),
+					$codigo
+				);
+			}
+		}
+
 		$j = ( is_wp_error( $r ) || 200 !== (int) wp_remote_retrieve_response_code( $r ) )
 			? null
 			: json_decode( wp_remote_retrieve_body( $r ), true );
@@ -313,6 +362,15 @@ class Malka_CRM_Updater {
 		set_site_transient( self::CACHE, $datos, self::RATO );
 
 		return $datos;
+	}
+
+	/**
+	 * Por qué falló la última consulta.
+	 *
+	 * @return string Vacío si no falló, o si no se consultó en esta carga.
+	 */
+	public static function motivo() {
+		return self::$motivo;
 	}
 
 	/** Borra lo guardado para que la próxima consulta pregunte de nuevo. */

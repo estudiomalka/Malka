@@ -1,5 +1,5 @@
 {
-  "version": "5.3.0",
-  "fecha": "2026-11-26T00:55:00Z",
-  "notas": "Cuerpo: un dibujo con los diez puntos donde se mide cada cosa, y cada número es un botón que agrega esa medida a tu lista. Antes había que acordarse del nombre y escribirlo bien."
+  "version": "5.3.1",
+  "fecha": "2026-11-26T01:15:00Z",
+  "notas": "El panel ahora dice qué falla al buscar actualizaciones en vez de un mensaje genérico. Y el dibujo de dónde se mide cada cosa, en Cuerpo."
 }
