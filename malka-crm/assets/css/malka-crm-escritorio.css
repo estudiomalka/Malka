@@ -11913,3 +11913,53 @@ svg[viewBox="0 0 20 20"] * { stroke-width: 1.2; }
 	/* El cuadrito de los días se va: en el teléfono no se lee igual. */
 	.malka-esc .esc-hab__m { display: none; }
 }
+
+/* El dibujo de dónde se mide cada cosa. */
+.malka-esc .esc-fig {
+	display: grid;
+	grid-template-columns: minmax(0, 220px) minmax(0, 1fr);
+	gap: 1.4rem 2rem;
+	align-items: start;
+	padding-top: .4rem;
+}
+.malka-esc .esc-fig svg { display: block; width: 100%; height: auto; color: var(--esc-ink); }
+/* La figura en el tono del texto; las guías y los números, en el gris de
+   lo secundario: el dibujo es la referencia, no el dato. */
+.malka-esc .esc-fig__b { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round; }
+.malka-esc .esc-fig__m { fill: none; stroke: var(--esc-ink-4); stroke-width: 1; stroke-dasharray: 3 3; }
+.malka-esc .esc-fig__p { fill: var(--esc-ink-2); }
+.malka-esc .esc-fig__n { fill: var(--esc-panel); font: 600 9px var(--esc-ui); text-anchor: middle; }
+
+/* La leyenda no se estira a lo ancho de la pantalla: con el botón a
+   30 cm del nombre, deja de leerse como una fila. */
+.malka-esc .esc-fig__l { max-width: 26rem; }
+.malka-esc .esc-fig__l ol { list-style: none; margin: 0; padding: 0; }
+.malka-esc .esc-fig__l li {
+	display: grid;
+	grid-template-columns: 20px minmax(0, 1fr) auto;
+	align-items: center;
+	gap: .6rem;
+	padding: .34rem 0;
+	border-top: 1px solid var(--esc-hair);
+	font-size: .88rem;
+}
+.malka-esc .esc-fig__l li:first-child { border-top: 0; }
+.malka-esc .esc-fig__l i {
+	display: grid;
+	place-items: center;
+	width: 18px;
+	height: 18px;
+	border-radius: 50%;
+	background: var(--esc-ink-2);
+	color: var(--esc-panel);
+	font: 600 .62rem/1 var(--esc-ui);
+	font-style: normal;
+}
+.malka-esc .esc-fig__l em { font-style: normal; font-size: .76rem; color: var(--esc-ink-3); }
+.malka-esc .esc-fig__l .is-ya span { color: var(--esc-ink-3); }
+
+@media ( max-width: 700px ) {
+	.malka-esc .esc-fig { grid-template-columns: minmax(0, 1fr); justify-items: center; }
+	.malka-esc .esc-fig svg { max-width: 220px; }
+	.malka-esc .esc-fig__l { width: 100%; }
+}

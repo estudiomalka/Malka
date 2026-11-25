@@ -38,6 +38,7 @@ class Malka_CRM_Bienestar {
 		add_action( 'admin_post_malka_crm_medida_borrar', array( __CLASS__, 'handle_medida_borrar' ) );
 		add_action( 'admin_post_malka_crm_medida_tipo', array( __CLASS__, 'handle_medida_tipo' ) );
 		add_action( 'admin_post_malka_crm_medida_meta', array( __CLASS__, 'handle_medida_meta' ) );
+		add_action( 'admin_post_malka_crm_medida_punto', array( __CLASS__, 'handle_medida_punto' ) );
 		add_action( 'wp_ajax_malka_crm_habito_marcar', array( __CLASS__, 'ajax_marcar' ) );
 	}
 
@@ -795,6 +796,7 @@ class Malka_CRM_Bienestar {
 		);
 
 		echo self::form_medir( $tipos ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo self::diagrama(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 
 		if ( ! $medidas ) {
 			printf(
@@ -817,6 +819,141 @@ class Malka_CRM_Bienestar {
 
 		echo self::tabla_medidas( $tipos, array_slice( $medidas, 0, 40 ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		echo '</section>';
+
+		return ob_get_clean();
+	}
+
+	/**
+	 * Los puntos del dibujo, en orden.
+	 *
+	 * El número del dibujo es la posición en esta lista. Agregar uno al
+	 * final no mueve los que ya están.
+	 *
+	 * @return array[] clave => nombre, unidad.
+	 */
+	public static function puntos() {
+		return array(
+			'cuello'      => array( __( 'Cuello', 'malka-crm' ), 'cm' ),
+			'pecho'       => array( __( 'Pecho', 'malka-crm' ), 'cm' ),
+			'cintura'     => array( __( 'Cintura', 'malka-crm' ), 'cm' ),
+			'cadera'      => array( __( 'Cadera', 'malka-crm' ), 'cm' ),
+			'muslo'       => array( __( 'Muslo', 'malka-crm' ), 'cm' ),
+			'pantorrilla' => array( __( 'Pantorrilla', 'malka-crm' ), 'cm' ),
+			'brazo'       => array( __( 'Brazo', 'malka-crm' ), 'cm' ),
+			'antebrazo'   => array( __( 'Antebrazo', 'malka-crm' ), 'cm' ),
+			'muneca'      => array( __( 'Muñeca', 'malka-crm' ), 'cm' ),
+			'altura'      => array( __( 'Altura', 'malka-crm' ), 'cm' ),
+		);
+	}
+
+	/**
+	 * Agrega la medida de un punto del dibujo.
+	 *
+	 * Sólo los del dibujo. El valor llega de un formulario, así que lo
+	 * que no esté en la lista no entra: si no, cualquiera podría crear
+	 * medidas con el nombre que quisiera mandando otro valor.
+	 *
+	 * @param string $punto La clave.
+	 * @return string La clave creada, o '' si no era del dibujo.
+	 */
+	public static function agregar_punto( $punto ) {
+		$puntos = self::puntos();
+		$punto  = sanitize_key( (string) $punto );
+
+		if ( ! isset( $puntos[ $punto ] ) ) {
+			return '';
+		}
+
+		return self::tipo_nuevo( $puntos[ $punto ][0], $puntos[ $punto ][1] );
+	}
+
+	/**
+	 * El dibujo con dónde se mide cada cosa.
+	 *
+	 * No es un adorno: cada número del dibujo es un botón que agrega esa
+	 * medida a tu lista. Así no hay que acordarse de cómo se llama cada
+	 * punto ni escribirlo bien, que es justo lo que hace que una lista de
+	 * medidas se llene a medias.
+	 *
+	 * Los que ya mides salen marcados y sin botón.
+	 *
+	 * @return string
+	 */
+	public static function diagrama() {
+		$puntos = self::puntos();
+		$tengo  = wp_list_pluck( self::tipos(), 'clave' );
+
+		ob_start();
+		printf( '<details class="esc-med__mas esc-fig__d"><summary>%s</summary>', esc_html__( 'Dónde se mide cada cosa', 'malka-crm' ) );
+		echo '<div class="esc-fig">';
+		echo <<<'SVG'
+			<svg aria-hidden="true" focusable="false" viewBox="0 0 250 520" xmlns="http://www.w3.org/2000/svg">
+			<ellipse class="esc-fig__b" cx="120" cy="34" rx="19" ry="25"/>
+			<path class="esc-fig__b" d="
+			M112 58 C112 67 107 71 99 74 C90 77 84 81 82 90
+			L66 150 L54 214 L49 250
+			C48 258 46 264 44 270 C43 275 46 278 51 277 C55 276 57 272 58 267
+			L64 234 L74 174 C75 164 76 156 76 146
+			L77 178 C78 192 78 200 77 210
+			C76 222 80 232 88 244 L96 300 L95 374 L95 452
+			C95 462 98 468 104 468 L112 468 C117 468 119 464 119 458
+			L120 300 L121 458 C121 464 123 468 128 468 L136 468
+			C142 468 145 462 145 452 L145 374 L144 300
+			L152 244 C160 232 164 222 163 210 C162 200 162 192 163 178
+			L164 146 C164 156 165 164 166 174 L176 234 L182 267
+			C183 272 185 276 189 277 C194 278 197 275 196 270
+			C194 264 192 258 191 250 L186 214 L174 150 L158 90
+			C156 81 150 77 141 74 C133 71 128 67 128 58" />
+			<line class="esc-fig__m" x1="104" y1="64" x2="202" y2="64"/>
+			<circle class="esc-fig__p" cx="212" cy="64" r="8"/><text class="esc-fig__n" x="212" y="67.5">1</text>
+			<line class="esc-fig__m" x1="74" y1="118" x2="202" y2="118"/>
+			<circle class="esc-fig__p" cx="212" cy="118" r="8"/><text class="esc-fig__n" x="212" y="121.5">2</text>
+			<line class="esc-fig__m" x1="77" y1="178" x2="202" y2="178"/>
+			<circle class="esc-fig__p" cx="212" cy="178" r="8"/><text class="esc-fig__n" x="212" y="181.5">3</text>
+			<line class="esc-fig__m" x1="78" y1="216" x2="202" y2="216"/>
+			<circle class="esc-fig__p" cx="212" cy="216" r="8"/><text class="esc-fig__n" x="212" y="219.5">4</text>
+			<line class="esc-fig__m" x1="97" y1="290" x2="44" y2="290"/>
+			<circle class="esc-fig__p" cx="34" cy="290" r="8"/><text class="esc-fig__n" x="34" y="293.5">5</text>
+			<line class="esc-fig__m" x1="95" y1="380" x2="44" y2="380"/>
+			<circle class="esc-fig__p" cx="34" cy="380" r="8"/><text class="esc-fig__n" x="34" y="383.5">6</text>
+			<line class="esc-fig__m" x1="170" y1="130" x2="218" y2="134"/>
+			<circle class="esc-fig__p" cx="228" cy="135" r="8"/><text class="esc-fig__n" x="228" y="138.5">7</text>
+			<line class="esc-fig__m" x1="180" y1="200" x2="218" y2="200"/>
+			<circle class="esc-fig__p" cx="228" cy="200" r="8"/><text class="esc-fig__n" x="228" y="203.5">8</text>
+			<line class="esc-fig__m" x1="188" y1="252" x2="218" y2="252"/>
+			<circle class="esc-fig__p" cx="228" cy="252" r="8"/><text class="esc-fig__n" x="228" y="255.5">9</text>
+			<path class="esc-fig__m" d="M14 9 V474 M8 9 H20 M8 474 H20"/>
+			<circle class="esc-fig__p" cx="14" cy="242" r="8"/><text class="esc-fig__n" x="14" y="245.5">10</text>
+			</svg>
+SVG;
+
+		printf( '<form method="post" action="%s" class="esc-fig__l">', esc_url( admin_url( 'admin-post.php' ) ) );
+		wp_nonce_field( 'malka_crm_medida_punto', '_wpnonce' );
+		echo '<input type="hidden" name="action" value="malka_crm_medida_punto" />';
+		echo '<ol>';
+
+		$n = 0;
+
+		foreach ( $puntos as $clave => $d ) {
+			$n++;
+			$ya = in_array( $clave, $tengo, true );
+
+			printf(
+				'<li%1$s><i>%2$d</i><span>%3$s</span>%4$s</li>',
+				$ya ? ' class="is-ya"' : '',
+				$n,
+				esc_html( $d[0] ),
+				$ya
+					? sprintf( '<em>%s</em>', esc_html__( 'ya la mides', 'malka-crm' ) )
+					: sprintf(
+						'<button type="submit" class="esc-mini" name="punto" value="%1$s">%2$s</button>',
+						esc_attr( $clave ),
+						esc_html__( 'Agregar', 'malka-crm' )
+					)
+			);
+		}
+
+		echo '</ol></form></div></details>';
 
 		return ob_get_clean();
 	}
@@ -1181,6 +1318,17 @@ class Malka_CRM_Bienestar {
 			self::meta( $clave, sanitize_text_field( (string) $valor ) );
 		}
 
+		self::volver( 'cuerpo' );
+	}
+
+	public static function handle_medida_punto() {
+		check_admin_referer( 'malka_crm_medida_punto' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'No puedes hacer eso.', 'malka-crm' ) );
+		}
+
+		self::agregar_punto( isset( $_POST['punto'] ) ? sanitize_key( wp_unslash( $_POST['punto'] ) ) : '' );
 		self::volver( 'cuerpo' );
 	}
 
