@@ -51,12 +51,19 @@ class Malka_CRM_Updater {
 	}
 
 	/**
-	 * Le pone la llave a la descarga del ZIP, cuando el repositorio es privado.
+	 * Prepara la descarga del ZIP: cómo pedirlo, y con qué llave si hace falta.
 	 *
-	 * Un repositorio privado no entrega el archivo a quien no se identifique:
-	 * WordPress pide la dirección sin credenciales y recibe un «no existe».
-	 * Esto agrega la llave sólo a las direcciones de este repositorio, nunca
-	 * a otra petición del sitio.
+	 * Dos cosas distintas, y conviene no confundirlas:
+	 *
+	 * - **Cómo se pide.** Siempre. La API de GitHub, si no se le dice que se
+	 *   quiere el archivo, contesta con una ficha en JSON y WordPress intenta
+	 *   descomprimir eso. Pasa igual con el repositorio público: ahí no falta
+	 *   ninguna credencial, falta decir qué se quiere.
+	 * - **Con qué llave.** Sólo si hay una guardada, o sea sólo cuando el
+	 *   repositorio es privado. Uno público entrega el archivo a cualquiera.
+	 *
+	 * En los dos casos se toca únicamente las direcciones de este
+	 * repositorio, nunca otra petición del sitio.
 	 *
 	 * @param array  $args Con qué se va a pedir.
 	 * @param string $url  A dónde.
@@ -66,7 +73,7 @@ class Malka_CRM_Updater {
 		$llave = self::llave();
 		$repo  = self::repo();
 
-		if ( '' === $llave || '' === $repo ) {
+		if ( '' === $repo ) {
 			return $args;
 		}
 
@@ -75,9 +82,6 @@ class Malka_CRM_Updater {
 		 *
 		 * - El adjunto de una release, que pide «octet-stream».
 		 * - Un archivo guardado en el repositorio, que pide «raw».
-		 *
-		 * Sin la cabecera que corresponde GitHub contesta con la ficha en
-		 * JSON en vez del archivo, y WordPress intenta descomprimir eso.
 		 */
 		$base = 'https://api.github.com/repos/' . $repo . '/';
 		$como = '';
@@ -105,8 +109,13 @@ class Malka_CRM_Updater {
 			$args['headers'] = array();
 		}
 
-		$args['headers']['Authorization'] = 'Bearer ' . $llave;
-		$args['headers']['Accept']        = $como;
+		// Cómo se pide: siempre, haya llave o no.
+		$args['headers']['Accept'] = $como;
+
+		// La llave: sólo si hay una, o sea sólo si el repositorio es privado.
+		if ( '' !== $llave ) {
+			$args['headers']['Authorization'] = 'Bearer ' . $llave;
+		}
 
 		return $args;
 	}
