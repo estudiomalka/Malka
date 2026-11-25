@@ -1,5 +1,5 @@
 {
-  "version": "5.2.0",
-  "fecha": "2026-11-25T22:30:00Z",
-  "notas": "Casa: una tarea puede ser de más de una persona, y cada persona tiene su color en los gráficos. Lo hecho entre varios se reparte, así que los porcentajes siguen sumando cien. Bienestar: hábitos con su racha, y un registro de medidas del cuerpo con su línea en el tiempo."
+  "version": "5.2.1",
+  "fecha": "2026-11-25T23:00:00Z",
+  "notas": "Los gráficos de la casa en grises, no en colores: un tono por persona, como el resto del panel. Una tarea puede ser de varias personas y lo hecho entre varios se reparte. Bienestar: hábitos con racha, y medidas del cuerpo con tus propias metas. Y un botón para buscar actualizaciones cuando quieras."
 }

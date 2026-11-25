@@ -37,6 +37,7 @@ class Malka_CRM_Bienestar {
 		add_action( 'admin_post_malka_crm_medida_anotar', array( __CLASS__, 'handle_medida_anotar' ) );
 		add_action( 'admin_post_malka_crm_medida_borrar', array( __CLASS__, 'handle_medida_borrar' ) );
 		add_action( 'admin_post_malka_crm_medida_tipo', array( __CLASS__, 'handle_medida_tipo' ) );
+		add_action( 'admin_post_malka_crm_medida_meta', array( __CLASS__, 'handle_medida_meta' ) );
 		add_action( 'wp_ajax_malka_crm_habito_marcar', array( __CLASS__, 'ajax_marcar' ) );
 	}
 
@@ -266,6 +267,50 @@ class Malka_CRM_Bienestar {
 		$d = self::datos();
 
 		return $d['tipos'];
+	}
+
+	/**
+	 * Pone —o saca— la meta de una medida.
+	 *
+	 * La pone ella, no el panel. Esa es toda la diferencia: un número que
+	 * una elige es una decisión suya, y uno que aparece solo en la
+	 * pantalla es alguien opinando sobre su cuerpo sin que se lo pidan.
+	 *
+	 * Por eso la meta se dibuja como una raya de referencia y se dice la
+	 * distancia, y nada más: no hay barra de progreso, ni porcentaje
+	 * cumplido, ni felicitaciones, ni avisos de que va quedando lejos.
+	 *
+	 * @param string $clave Cuál.
+	 * @param string $valor El número. Vacío: saca la meta.
+	 * @return bool Si existe esa medida.
+	 */
+	public static function meta( $clave, $valor ) {
+		$clave = sanitize_key( $clave );
+		$valor = str_replace( ',', '.', trim( (string) $valor ) );
+		$d     = self::datos();
+		$hubo  = false;
+
+		foreach ( $d['tipos'] as $i => $t ) {
+			if ( $t['clave'] !== $clave ) {
+				continue;
+			}
+
+			$hubo = true;
+
+			if ( '' === $valor || ! is_numeric( $valor ) || (float) $valor <= 0 ) {
+				// Sacar la meta tiene que ser tan fácil como ponerla.
+				unset( $d['tipos'][ $i ]['meta'] );
+			} else {
+				$d['tipos'][ $i ]['meta'] = round( (float) $valor, 2 );
+			}
+		}
+
+		if ( $hubo ) {
+			$d['tipos'] = array_values( $d['tipos'] );
+			self::guardar_todo( $d );
+		}
+
+		return $hubo;
 	}
 
 	/**
@@ -631,7 +676,7 @@ class Malka_CRM_Bienestar {
 		 */
 		printf(
 			'<p class="esc-hint esc-med__p">%s</p>',
-			esc_html__( 'Esto se guarda en tu propio sitio, igual que el resto del panel: no sale a ninguna parte. Son tus números y nada más que eso — acá no hay metas, ni rangos, ni nadie diciéndote si están bien o mal.', 'malka-crm' )
+			esc_html__( 'Esto se guarda en tu propio sitio y no sale a ninguna parte. Las metas las pones tú; el panel no opina sobre tus números.', 'malka-crm' )
 		);
 
 		echo self::form_medir( $tipos ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -639,7 +684,7 @@ class Malka_CRM_Bienestar {
 		if ( ! $medidas ) {
 			printf(
 				'<p class="esc-empty">%s</p>',
-				esc_html__( 'Todavía no hay nada anotado. Anota lo que quieras seguir y acá va a aparecer cómo viene en el tiempo. El panel no opina sobre los números: sólo los guarda y los dibuja.', 'malka-crm' )
+				esc_html__( 'Todavía no hay nada anotado. Anota lo que quieras seguir y acá aparece cómo viene.', 'malka-crm' )
 			);
 			echo '</section>';
 			return ob_get_clean();
@@ -709,6 +754,29 @@ class Malka_CRM_Bienestar {
 		printf( '<button type="submit" class="esc-btn">%s</button>', esc_html__( 'Agregar', 'malka-crm' ) );
 		echo '</form></details>';
 
+		// Las metas: las pone ella, y se sacan dejando el campo vacío.
+		printf( '<details class="esc-med__mas"><summary>%s</summary>', esc_html__( 'Mis metas', 'malka-crm' ) );
+		printf(
+			'<p class="esc-hint">%s</p>',
+			esc_html__( 'Opcional. Aparece como una raya en el gráfico y te digo cuánto falta. Para sacarla, deja el campo vacío.', 'malka-crm' )
+		);
+		printf( '<form class="esc-med__n" method="post" action="%s">', esc_url( admin_url( 'admin-post.php' ) ) );
+		wp_nonce_field( 'malka_crm_medida_meta', '_wpnonce' );
+		echo '<input type="hidden" name="action" value="malka_crm_medida_meta" />';
+
+		foreach ( $tipos as $t ) {
+			printf(
+				'<label><span>%1$s</span><input type="text" inputmode="decimal" name="m[%2$s]" value="%3$s" placeholder="%4$s" /></label>',
+				esc_html( $t['nombre'] . ( $t['unidad'] ? ' (' . $t['unidad'] . ')' : '' ) ),
+				esc_attr( $t['clave'] ),
+				esc_attr( isset( $t['meta'] ) ? $t['meta'] : '' ),
+				esc_attr__( 'sin meta', 'malka-crm' )
+			);
+		}
+
+		printf( '<button type="submit" class="esc-btn">%s</button>', esc_html__( 'Guardar', 'malka-crm' ) );
+		echo '</form></details>';
+
 		return ob_get_clean();
 	}
 
@@ -750,6 +818,29 @@ class Malka_CRM_Bienestar {
 			return number_format_i18n( (float) $v, $dec ) . ( $t['unidad'] ? ' ' . $t['unidad'] : '' );
 		};
 
+		/*
+		 * La meta que ella puso, si puso una. Entra en la escala del
+		 * dibujo: si queda fuera del rango de lo medido, el gráfico se
+		 * estira para que la raya se vea; si no, la raya quedaría en el
+		 * borde o fuera y no serviría de referencia.
+		 */
+		$meta = isset( $t['meta'] ) ? (float) $t['meta'] : null;
+
+		if ( null !== $meta ) {
+			$min = min( $min, $meta );
+			$max = max( $max, $meta );
+			// Recalcular con la meta adentro, antes de ubicar los puntos.
+			$rango  = ( $max - $min ) > 0 ? ( $max - $min ) : 1;
+			$puntos = array();
+
+			foreach ( $serie as $i => $s ) {
+				$x = ( $i / $pasos ) * $ancho;
+				$y = $alto - ( ( $s['valor'] - $min ) / $rango ) * ( $alto - 12 ) - 6;
+
+				$puntos[] = round( $x, 1 ) . ',' . round( $y, 1 );
+			}
+		}
+
 		ob_start();
 		echo '<div class="esc-med__g">';
 		printf(
@@ -765,23 +856,42 @@ class Malka_CRM_Bienestar {
 			)
 		);
 
+		// La raya de la meta, punteada, por debajo de la línea de datos.
+		$raya = '';
+
+		if ( null !== $meta ) {
+			$ym = $alto - ( ( $meta - $min ) / $rango ) * ( $alto - 12 ) - 6;
+
+			$raya = sprintf(
+				'<line x1="0" y1="%1$s" x2="%2$d" y2="%1$s" stroke="currentColor" stroke-width="1" ' .
+				'stroke-dasharray="4 4" opacity=".45" vector-effect="non-scaling-stroke" />',
+				esc_attr( round( $ym, 1 ) ),
+				(int) $ancho
+			);
+		}
+
 		printf(
-			'<svg viewBox="0 0 %1$d %2$d" preserveAspectRatio="none" role="img" aria-label="%3$s">' .
+			'<svg viewBox="0 0 %1$d %2$d" preserveAspectRatio="none" role="img" aria-label="%3$s">%5$s' .
 			'<polyline points="%4$s" fill="none" stroke="currentColor" stroke-width="2" ' .
 			'stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke" /></svg>',
 			(int) $ancho,
 			(int) $alto,
 			esc_attr(
 				sprintf(
-					/* translators: 1: qué, 2: cuántas mediciones, 3: desde, 4: hasta */
-					__( '%1$s: %2$d mediciones, de %3$s a %4$s', 'malka-crm' ),
+					/* translators: 1: qué, 2: cuántas mediciones, 3: desde, 4: hasta, 5: la meta */
+					__( '%1$s: %2$d mediciones, de %3$s a %4$s%5$s', 'malka-crm' ),
 					$t['nombre'],
 					count( $serie ),
 					$marca( $prim['valor'] ),
-					$marca( $ult['valor'] )
+					$marca( $ult['valor'] ),
+					null === $meta
+						? ''
+						/* translators: la meta */
+						: '. ' . sprintf( __( 'Tu meta: %s', 'malka-crm' ), $marca( $meta ) )
 				)
 			),
-			esc_attr( implode( ' ', $puntos ) )
+			esc_attr( implode( ' ', $puntos ) ),
+			$raya // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		);
 
 		printf(
@@ -789,6 +899,31 @@ class Malka_CRM_Bienestar {
 			esc_html( $marca( $min ) ),
 			esc_html( $marca( $max ) )
 		);
+
+		/*
+		 * La distancia a la meta, dicha y nada más. Sin barra de progreso
+		 * ni porcentaje cumplido: la meta es de ella y el panel sólo
+		 * resta. Tampoco dice «te falta poco» ni «vas lejos» — eso ya
+		 * sería opinar.
+		 */
+		if ( null !== $meta ) {
+			$falta = round( abs( $ult['valor'] - $meta ), 2 );
+
+			printf(
+				'<p class="esc-med__meta">%s</p>',
+				esc_html(
+					$falta < 0.005
+						/* translators: la meta */
+						? sprintf( __( 'Tu meta: %s. Estás ahí.', 'malka-crm' ), $marca( $meta ) )
+						: sprintf(
+							/* translators: 1: la meta, 2: la diferencia */
+							__( 'Tu meta: %1$s · %2$s de diferencia', 'malka-crm' ),
+							$marca( $meta ),
+							$marca( $falta )
+						)
+				)
+			);
+		}
 
 		echo '</div>';
 
@@ -915,6 +1050,22 @@ class Malka_CRM_Bienestar {
 			isset( $_POST['nombre'] ) ? wp_unslash( $_POST['nombre'] ) : '', // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			isset( $_POST['unidad'] ) ? wp_unslash( $_POST['unidad'] ) : '' // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		);
+		self::volver( 'cuerpo' );
+	}
+
+	public static function handle_medida_meta() {
+		check_admin_referer( 'malka_crm_medida_meta' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'No puedes hacer eso.', 'malka-crm' ) );
+		}
+
+		$m = isset( $_POST['m'] ) ? (array) wp_unslash( $_POST['m'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+
+		foreach ( $m as $clave => $valor ) {
+			self::meta( $clave, sanitize_text_field( (string) $valor ) );
+		}
+
 		self::volver( 'cuerpo' );
 	}
 

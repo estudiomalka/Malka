@@ -4188,19 +4188,47 @@ class Malka_CRM_Dashboard {
 		echo '</div>';
 
 		if ( '' !== $repo ) {
-			$u = Malka_CRM_Updater::ultima();
+			$u   = Malka_CRM_Updater::ultima();
+			$hay = $u && version_compare( $u['version'], MALKA_CRM_VERSION, '>' );
+
+			if ( ! $u ) {
+				$dice = __( 'No se pudo leer ese repositorio. Revisa el nombre y, si es privado, la llave.', 'malka-crm' );
+			} elseif ( $hay ) {
+				$dice = sprintf(
+					/* translators: 1: versión publicada, 2: versión instalada */
+					__( 'Hay una versión nueva: la %1$s. Tienes la %2$s. Aparece en Plugins → Actualizaciones.', 'malka-crm' ),
+					$u['version'],
+					MALKA_CRM_VERSION
+				);
+			} else {
+				$dice = sprintf(
+					/* translators: versión instalada */
+					__( 'Estás al día con la %s.', 'malka-crm' ),
+					MALKA_CRM_VERSION
+				);
+			}
+
+			printf( '<p class="esc-hint">%s</p>', esc_html( $dice ) );
+
+			/*
+			 * Un botón para volver a preguntar.
+			 *
+			 * La respuesta se guarda seis horas, y eso incluye los
+			 * fracasos: si el repositorio estaba privado cuando el sitio
+			 * preguntó, seguía diciendo «no hay nada» durante horas
+			 * aunque ya estuviera público. Sin esto no había forma de
+			 * pedirle que mirara de nuevo, y la pantalla mentía sin que
+			 * se notara.
+			 */
 			printf(
-				'<p class="esc-hint">%s</p>',
-				esc_html(
-					$u
-						? sprintf(
-							/* translators: 1: versión publicada, 2: versión instalada */
-							__( 'Última publicada: %1$s. Tienes la %2$s.', 'malka-crm' ),
-							$u['version'],
-							MALKA_CRM_VERSION
-						)
-						: __( 'No se pudo leer ese repositorio. Revisa el nombre y, si es privado, la llave.', 'malka-crm' )
-				)
+				'<form method="post" action="%1$s" class="esc-cfg__rb">%2$s' .
+				'<input type="hidden" name="action" value="malka_crm_buscar_version" />' .
+				'<input type="hidden" name="malka_volver" value="%3$s" />' .
+				'<button type="submit" class="esc-btn">%4$s</button></form>',
+				esc_url( admin_url( 'admin-post.php' ) ),
+				wp_nonce_field( 'malka_crm_buscar_version', '_wpnonce', true, false ),
+				esc_attr( self::view_url( 'configuracion' ) ),
+				esc_html__( 'Buscar ahora', 'malka-crm' )
 			);
 		}
 

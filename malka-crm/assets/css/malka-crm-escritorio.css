@@ -14,20 +14,24 @@
 	--esc-side:    #FFFFFF;
 	--esc-ink:     #000000;
 
-	/* Un color por persona, para los gráficos de la casa. Son los únicos
-	   colores del panel que no quieren decir «entra plata» o «está
-	   atrasado»: acá el color es sólo identidad, y por eso nunca va solo
-	   —al lado siempre está el nombre, o una leyenda.
+	/* Un tono por persona, para los gráficos de la casa.
 
-	   El orden es fijo: una persona se queda con su color aunque suba o
-	   baje en el gráfico. Validados contra el blanco del panel y entre
-	   pares contiguos, también para quien no distingue colores. */
-	--esc-s1:      #257DE0;
-	--esc-s2:      #F47230;
-	--esc-s3:      #00B894;
-	--esc-s4:      #F2A600;
-	--esc-s5:      #EE7FAC;
-	--esc-s6:      #008A17;
+	   En grises, no en colores: en este panel el color quiere decir algo
+	   —verde entra plata, rojo atrasado— y un azul y un naranjo acá
+	   parecerían otra app y además competirían con lo que sí importa.
+	   Quién lavó la loza no es una alerta.
+
+	   Los pasos van alternados, oscuro–claro–oscuro, para que dos
+	   personas contiguas en una barra apilada se distingan lo más
+	   posible: el peor par vecino queda en ΔE 21,8, más separado que la
+	   paleta de colores que esto reemplazó. El orden es fijo: una
+	   persona se queda con su tono aunque suba o baje en el gráfico. */
+	--esc-s1:      #000000;
+	--esc-s2:      #9A9AA0;
+	--esc-s3:      #5A5A60;
+	--esc-s4:      #B8B8BE;
+	--esc-s5:      #38383C;
+	--esc-s6:      #7C7C82;
 	/* Grises medidos contra blanco y contra el fondo: 5,1:1 y 4,5:1. El de
 	   iOS (#8E8E93) daba 3,4:1 y un dato de 13 px no se leía. */
 	--esc-ink-2:   #6E6E73;
@@ -80,13 +84,15 @@
 		--esc-hair:    #262628;
 		--esc-fill:    #1F1F21;
 
-		/* Los seis de la casa, pisados para el fondo oscuro. */
-		--esc-s1:      #338CED;
-		--esc-s2:      #E76624;
-		--esc-s3:      #00A888;
-		--esc-s4:      #D28E05;
-		--esc-s5:      #E24D8B;
-		--esc-s6:      #0AAC23;
+		/* Los seis de la casa, dados vuelta para el fondo oscuro:
+		   el más fuerte sigue siendo el primero, pero acá eso es
+		   blanco y no negro. */
+		--esc-s1:      #FFFFFF;
+		--esc-s2:      #6E6E75;
+		--esc-s3:      #B8B8BE;
+		--esc-s4:      #505056;
+		--esc-s5:      #D8D8DD;
+		--esc-s6:      #86868D;
 
 		/* De noche se invierte: lo seleccionado es blanco con texto negro. */
 		--esc-accent:  #FFFFFF;
@@ -118,14 +124,13 @@
 	--esc-hair:    #262628;
 	--esc-fill:    #1F1F21;
 
-	/* Los mismos seis, pisados para el fondo oscuro: no es el mismo valor
-	   aclarado, es otro paso de la misma rampa, medido contra #161617. */
-	--esc-s1:      #338CED;
-	--esc-s2:      #E76624;
-	--esc-s3:      #00A888;
-	--esc-s4:      #D28E05;
-	--esc-s5:      #E24D8B;
-	--esc-s6:      #0AAC23;
+	/* Los seis de la casa, dados vuelta para el fondo oscuro. */
+	--esc-s1:      #FFFFFF;
+	--esc-s2:      #6E6E75;
+	--esc-s3:      #B8B8BE;
+	--esc-s4:      #505056;
+	--esc-s5:      #D8D8DD;
+	--esc-s6:      #86868D;
 	--esc-accent:  #FFFFFF;
 	--esc-accent-f:#FFFFFF;
 	--esc-accent-t:#FFFFFF;

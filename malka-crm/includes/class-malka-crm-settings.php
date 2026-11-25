@@ -1341,6 +1341,22 @@ class Malka_CRM_Settings {
 
 		self::update( $out );
 
+		/*
+		 * Guardar vuelve a preguntar por la versión publicada.
+		 *
+		 * Sin esto, un fracaso quedaba guardado seis horas: si el
+		 * repositorio estaba privado —o mal escrito— cuando el sitio
+		 * preguntó, seguía diciendo «no hay nada» durante horas aunque
+		 * ya estuviera arreglado, y no había manera de pedirle que
+		 * mirara de nuevo. Arreglar la configuración tiene que alcanzar.
+		 */
+		do_action( 'malka_crm_olvidar_version' );
+
+		if ( function_exists( 'delete_site_transient' ) ) {
+			// Y que WordPress también vuelva a mirar, no sólo nosotros.
+			delete_site_transient( 'update_plugins' );
+		}
+
 		// Vuelve de donde vino: si guardó desde el escritorio, se queda ahí.
 		$volver = isset( $in['malka_volver'] ) ? esc_url_raw( $in['malka_volver'] ) : '';
 

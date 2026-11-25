@@ -46,6 +46,7 @@ class Malka_CRM_Updater {
 		// como antes o WordPress lo da por otro plugin y lo desactiva.
 		add_filter( 'upgrader_source_selection', array( __CLASS__, 'renombrar' ), 10, 4 );
 		add_action( 'malka_crm_olvidar_version', array( __CLASS__, 'olvidar' ) );
+		add_action( 'admin_post_malka_crm_buscar_version', array( __CLASS__, 'handle_buscar' ) );
 		// Para bajar el ZIP de un repositorio privado hace falta la llave.
 		add_filter( 'http_request_args', array( __CLASS__, 'firmar' ), 10, 2 );
 	}
@@ -317,6 +318,30 @@ class Malka_CRM_Updater {
 	/** Borra lo guardado para que la próxima consulta pregunte de nuevo. */
 	public static function olvidar() {
 		delete_site_transient( self::CACHE );
+	}
+
+	/**
+	 * «Buscar ahora»: olvidar lo guardado y preguntar de verdad.
+	 *
+	 * Borra las dos memorias, la nuestra y la de WordPress: con una sola
+	 * el panel diría que hay una versión nueva y la lista de plugins
+	 * seguiría sin ofrecerla, que es peor que no decir nada.
+	 */
+	public static function handle_buscar() {
+		check_admin_referer( 'malka_crm_buscar_version' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'No puedes hacer eso.', 'malka-crm' ) );
+		}
+
+		self::olvidar();
+		self::ultima( true );
+		delete_site_transient( 'update_plugins' );
+
+		$volver = isset( $_POST['malka_volver'] ) ? esc_url_raw( wp_unslash( $_POST['malka_volver'] ) ) : '';
+
+		wp_safe_redirect( $volver ? $volver : admin_url( 'plugins.php' ) );
+		exit;
 	}
 
 	/**
