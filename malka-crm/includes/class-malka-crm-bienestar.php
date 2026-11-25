@@ -1191,7 +1191,12 @@ SVG;
 	 */
 	private static function tabla_medidas( $tipos, $medidas ) {
 		ob_start();
-		echo '<div class="esc-tabla-w"><table class="esc-tabla esc-med__t"><thead><tr>';
+		/*
+		 * Nada de «esc-tabla»: en este panel esa clase es una grilla CSS
+		 * para listas, no una tabla, y ponérsela a un <table> de verdad lo
+		 * convertía en grid y le deshacía las filas.
+		 */
+		echo '<div class="esc-med__tw"><table class="esc-med__t"><thead><tr>';
 		printf( '<th>%s</th>', esc_html__( 'Cuándo', 'malka-crm' ) );
 
 		foreach ( $tipos as $t ) {

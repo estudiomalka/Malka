@@ -1,5 +1,5 @@
 {
-  "version": "5.3.1",
-  "fecha": "2026-11-26T01:15:00Z",
-  "notas": "El panel ahora dice qué falla al buscar actualizaciones en vez de un mensaje genérico. Y el dibujo de dónde se mide cada cosa, en Cuerpo."
+  "version": "5.3.2",
+  "fecha": "2026-11-26T01:35:00Z",
+  "notas": "Hábitos ya se ve como el resto del panel: le faltaba el CSS de su formulario. La tabla de medidas tenía una clase que la convertía en grilla y le deshacia las filas. Y el panel ahora dice qué falla al buscar actualizaciones."
 }

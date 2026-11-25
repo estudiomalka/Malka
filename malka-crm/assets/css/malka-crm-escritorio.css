@@ -11794,10 +11794,12 @@ svg[viewBox="0 0 20 20"] * { stroke-width: 1.2; }
 .malka-esc .esc-hab__t i { font-style: normal; font-size: .78rem; color: var(--esc-ink-3); }
 
 /* Las últimas cuatro semanas: un cuadrito por día. */
-.malka-esc .esc-hab__m { display: grid; grid-template-columns: repeat(14, 1fr); gap: 2px; }
+/* Los 28 días en una sola fila: es una línea de tiempo, y en dos filas
+   se leía como un cuadrito de píxeles en vez de «los últimos días». */
+.malka-esc .esc-hab__m { display: grid; grid-template-columns: repeat(28, 1fr); gap: 2px; width: 196px; }
 .malka-esc .esc-hab__m i {
-	width: 8px;
-	height: 8px;
+	width: 100%;
+	height: 10px;
 	border-radius: 2px;
 	background: var(--esc-fill);
 	border: 1px solid var(--esc-hair);
@@ -11807,15 +11809,34 @@ svg[viewBox="0 0 20 20"] * { stroke-width: 1.2; }
 .malka-esc .esc-hab__i:hover .esc-hab__x button,
 .malka-esc .esc-hab__x button:focus-visible { opacity: 1; }
 
-/* Agregar un hábito. */
+/* Agregar un hábito. Los campos se visten igual que los de medidas:
+   rótulo chico arriba, campo abajo. Antes la grilla estaba y los campos
+   no, así que el rótulo salía pegado al costado del input. */
 .malka-esc .esc-hab__n {
 	display: grid;
-	grid-template-columns: minmax(0, 1fr) auto;
-	gap: .5rem;
+	grid-template-columns: minmax(0, 22rem) auto;
+	gap: .5rem .6rem;
 	align-items: end;
+	justify-content: start;
 	margin: 1rem var(--esc-pad) 0;
 	padding-top: 1rem;
 	border-top: 1px solid var(--esc-hair);
+}
+.malka-esc .esc-hab__n label,
+.malka-esc .esc-med__n label { display: flex; flex-direction: column; gap: .2rem; min-width: 0; }
+.malka-esc .esc-hab__n span,
+.malka-esc .esc-med__n span { font-size: .74rem; color: var(--esc-ink-3); }
+.malka-esc .esc-hab__n input,
+.malka-esc .esc-med__n input {
+	width: 100%;
+	min-width: 0;
+	padding: .42rem .6rem;
+	border: 1px solid var(--esc-hair);
+	border-radius: var(--esc-r);
+	background: var(--esc-panel);
+	color: var(--esc-ink);
+	font: inherit;
+	font-size: .9rem;
 }
 
 /* ─── Medidas ─── */
@@ -11828,19 +11849,6 @@ svg[viewBox="0 0 20 20"] * { stroke-width: 1.2; }
 	gap: .5rem .6rem;
 	align-items: end;
 	margin: 0 var(--esc-pad) 1rem;
-}
-.malka-esc .esc-med__n label { display: flex; flex-direction: column; gap: .2rem; min-width: 0; }
-.malka-esc .esc-med__n span { font-size: .74rem; color: var(--esc-ink-3); }
-.malka-esc .esc-med__n input {
-	width: 100%;
-	min-width: 0;
-	padding: .42rem .6rem;
-	border: 1px solid var(--esc-hair);
-	border-radius: var(--esc-r);
-	background: var(--esc-panel);
-	color: var(--esc-ink);
-	font: inherit;
-	font-size: .9rem;
 }
 /* El botón ocupa lo suyo, no una columna entera: estirado parecía un
    bloque más del formulario y no la acción que lo cierra. */
@@ -11899,8 +11907,33 @@ svg[viewBox="0 0 20 20"] * { stroke-width: 1.2; }
 	font-variant-numeric: tabular-nums;
 }
 
-/* La tabla de lo anotado. */
-.malka-esc .esc-med__t { font-variant-numeric: tabular-nums; }
+/* La tabla de lo anotado. Con su propio envoltorio: en un teléfono, seis
+   medidas no caben a lo ancho y es mejor que la tabla se deslice sola
+   antes que empujar la página entera. */
+.malka-esc .esc-med__tw { margin: 0 var(--esc-pad); overflow-x: auto; }
+.malka-esc .esc-med__t {
+	width: 100%;
+	border-collapse: collapse;
+	font-variant-numeric: tabular-nums;
+	font-size: .88rem;
+}
+.malka-esc .esc-med__t th {
+	text-align: left;
+	font-size: .72rem;
+	font-weight: 500;
+	text-transform: uppercase;
+	letter-spacing: .04em;
+	color: var(--esc-ink-3);
+	padding: .3rem .7rem .3rem 0;
+	white-space: nowrap;
+}
+.malka-esc .esc-med__t td {
+	padding: .44rem .7rem .44rem 0;
+	border-top: 1px solid var(--esc-hair);
+	white-space: nowrap;
+}
+.malka-esc .esc-med__t td:last-child,
+.malka-esc .esc-med__t th:last-child { padding-right: 0; text-align: right; }
 .malka-esc .esc-med__t td form { display: inline; }
 .malka-esc .esc-med__t td:last-child button { opacity: 0; transition: opacity .12s; }
 .malka-esc .esc-med__t tr:hover td:last-child button,
@@ -11933,6 +11966,8 @@ svg[viewBox="0 0 20 20"] * { stroke-width: 1.2; }
 /* La leyenda no se estira a lo ancho de la pantalla: con el botón a
    30 cm del nombre, deja de leerse como una fila. */
 .malka-esc .esc-fig__l { max-width: 26rem; }
+/* El botón de «Buscar ahora», separado del texto que lo explica. */
+.malka-esc .esc-cfg__rb { margin: .6rem 0 0; }
 .malka-esc .esc-fig__l ol { list-style: none; margin: 0; padding: 0; }
 .malka-esc .esc-fig__l li {
 	display: grid;
