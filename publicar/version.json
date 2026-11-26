@@ -1,5 +1,5 @@
 {
-  "version": "5.6.0",
-  "fecha": "2026-11-26T04:20:00Z",
-  "notas": "Cuerpo: al pasar el mouse por cada medida te dice como tomarla bien. Se pueden anotar los 7 pliegues y los datos de la balanza (IMC, metabolismo, grasa visceral, musculo, hueso, proteina, agua). Todo lo que anotes el mismo dia queda en un solo registro, y los registros pasados se pueden editar o borrar."
+  "version": "5.7.0",
+  "fecha": "2026-11-26T11:10:00Z",
+  "notas": "Nuevo: el botón ⚑ para reportar. Está abajo a la derecha en todas las pantallas. Apretás, dices si no funciona, no te gusta o falta algo, escribes una línea y queda guardado con la pantalla, la fecha y el ancho de la ventana puestos solos. En Configuración → Estudio → Reportes queda la lista con un botón para copiar todo de una vez."
 }
