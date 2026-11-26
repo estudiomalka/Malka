@@ -1,5 +1,5 @@
 {
-  "version": "5.9.1",
-  "fecha": "2026-11-26T17:45:00Z",
-  "notas": "El panel guardaba la respuesta de GitHub seis horas, así que una versión nueva podía tardar media jornada en aparecer. Ahora son quince minutos. Trae todo lo de la 5.8.0 y la 5.9.0: las cinco fallas del video y los gráficos nuevos."
+  "version": "5.10.0",
+  "fecha": "2026-11-26T19:20:00Z",
+  "notas": "Las flechitas del inicio. Al apretar Personalizar, cada cuadro trae ahora una flecha para subir y otra para bajar, al lado del asa de arrastrar. Se puede apretar varias veces seguidas sin perseguir el botón. El orden queda guardado."
 }
