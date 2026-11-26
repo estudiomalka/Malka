@@ -1,5 +1,5 @@
 {
-  "version": "5.9.0",
-  "fecha": "2026-11-26T17:10:00Z",
-  "notas": "Los gráficos. Con el rango en Mes ya no sale un bloque negro: se muestran doce meses, el elegido al frente y los anteriores atrás, más chicos y más claros. Y el negro puro se fue de todos los gráficos del panel, incluidas las barras de Casa: ahora es un gris oscuro."
+  "version": "5.9.1",
+  "fecha": "2026-11-26T17:45:00Z",
+  "notas": "El panel guardaba la respuesta de GitHub seis horas, así que una versión nueva podía tardar media jornada en aparecer. Ahora son quince minutos. Trae todo lo de la 5.8.0 y la 5.9.0: las cinco fallas del video y los gráficos nuevos."
 }
