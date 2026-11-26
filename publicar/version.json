@@ -1,5 +1,5 @@
 {
-  "version": "5.10.0",
-  "fecha": "2026-11-26T19:20:00Z",
-  "notas": "Las flechitas del inicio. Al apretar Personalizar, cada cuadro trae ahora una flecha para subir y otra para bajar, al lado del asa de arrastrar. Se puede apretar varias veces seguidas sin perseguir el botón. El orden queda guardado."
+  "version": "5.11.0",
+  "fecha": "2026-11-26T20:40:00Z",
+  "notas": "El pomodoro. El selector En qué trabajas ahora lista también los clientes, además de los proyectos, y ya no se queda vacío cuando un proyecto tiene todas sus tareas hechas pero sigue abierto. Las horas donadas se marcan con una casilla al arrancar el rato y quedan asociadas al cliente: ya no hay que entrar a la ficha del proyecto a marcarlo sin costo. En Horas donadas se ven agrupadas por cliente."
 }
