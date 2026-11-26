@@ -1,5 +1,5 @@
 {
-  "version": "5.12.0",
-  "fecha": "2026-11-26T21:05:00Z",
-  "notas": "Agregar a alguien nuevo desde el pomodoro. Si escribes un nombre que no está en la lista, aparece «Agregar» y queda creado y elegido sin salir del reloj. Sirve para el trabajo que se regala a quien todavía no es cliente."
+  "version": "5.13.0",
+  "fecha": "2026-11-26T21:35:00Z",
+  "notas": "Anotar a mano un rato donado. En Horas donadas hay un formulario con a quién, cuántas horas y minutos, cuándo fue y qué fue. Sirve para lo que se regaló y no se cronometró, que es casi todo. Se puede escribir a alguien que no está en la lista con «Otra persona…» y queda creado."
 }
