@@ -1,5 +1,5 @@
 {
-  "version": "5.13.0",
-  "fecha": "2026-11-26T21:35:00Z",
-  "notas": "Anotar a mano un rato donado. En Horas donadas hay un formulario con a quién, cuántas horas y minutos, cuándo fue y qué fue. Sirve para lo que se regaló y no se cronometró, que es casi todo. Se puede escribir a alguien que no está en la lista con «Otra persona…» y queda creado."
+  "version": "5.14.0",
+  "fecha": "2026-11-27T18:10:00Z",
+  "notas": "Los tres reportes del ⚑. Los botones de quién hizo la tarea de Casa van en una fila y con el check redondo. «Última medición» deja de ser un link de cuatro líneas: fecha arriba y tres números grandes, el resto a un clic. Y en Hábitos se puede ir a días anteriores para marcar lo que se olvidó o desmarcar lo que quedó mal; hacia adelante no."
 }
